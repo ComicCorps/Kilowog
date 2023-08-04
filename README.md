@@ -4,7 +4,7 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.9-green?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Beta-yellowgreen?style=flat-square)
 
-[![Gradle](https://img.shields.io/badge/Build--Tool-Gradle-informational?style=flat-square)](https://gradle.org/)
+[![Gradle](https://img.shields.io/badge/Build--Tool-Gradle-informational?logo=gradle,style=flat-square)](https://gradle.org/)
 [![ktlint](https://img.shields.io/badge/Linter-ktlint-informational?style=flat-square)](https://github.com/pinterest/ktlint)
 
 [![Github - Version](https://img.shields.io/github/v/tag/Buried-In-Code/Kilowog?logo=Github&label=Version&style=flat-square)](https://github.com/Buried-In-Code/Kilowog/tags)
@@ -19,7 +19,6 @@ _TODO_
 ./gradlew clean run
 ```
 
-## Socials
 ## Socials
 
 [![Social - Fosstodon](https://img.shields.io/badge/%40BuriedInCode-teal?label=Fosstodon&logo=mastodon&style=for-the-badge)](https://fosstodon.org/@BuriedInCode)  
