@@ -73,13 +73,13 @@ object Utils : Logging {
         }
     }
 
-    internal fun listFiles(path: Path, fileExtension: String): List<Path> {
+    internal fun listFiles(path: Path, vararg fileExtensions: String): List<Path> {
         require(Files.isDirectory(path)) { "Path must be a directory" }
         var results: List<Path> = emptyList()
         try {
             Files.walk(path, FileVisitOption.FOLLOW_LINKS).use { walk ->
                 results = walk.filter { Files.isRegularFile(it) }
-                    .filter { it.fileName.toString().endsWith(fileExtension) }
+                    .filter { it.toFile().extension in fileExtensions }
                     .collect(Collectors.toList())
             }
         } catch (ioe: IOException) {

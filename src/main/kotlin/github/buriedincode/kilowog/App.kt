@@ -15,6 +15,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
+import java.nio.file.Path
 import java.io.FileOutputStream
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
@@ -154,7 +155,7 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (exc: MissingFieldException) {
-            logger.fatal(content)
+            //logger.fatal(content)
             logger.fatal(exc)
             null
         }
@@ -167,7 +168,7 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (exc: MissingFieldException) {
-            logger.fatal(content)
+            //logger.fatal(content)
             logger.fatal(exc)
             null
         }
@@ -180,34 +181,26 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (exc: MissingFieldException) {
-            logger.fatal(content)
+            //logger.fatal(content)
             logger.fatal(exc)
             null
         }
     }
 
-    fun readCollection(settings: Settings) {
-        var files = listFiles(settings.collectionFolder, fileExtension = ".cbz")
-        files.mapNotNull {
-            readMetadata(archiveFile = it.toFile())
-                ?: readMetronInfo(archiveFile = it.toFile())
-                ?: readComicInfo(archiveFile = it.toFile())
-        }.forEach {
-            // logger.info(it.toString())
-        }
-        files = listFiles(settings.collectionFolder, fileExtension = ".cbr")
-        files.mapNotNull {
-            readMetadata(archiveFile = it.toFile())
-                ?: readMetronInfo(archiveFile = it.toFile())
-                ?: readComicInfo(archiveFile = it.toFile())
-        }.forEach {
-            // logger.info(it.toString())
+    fun readCollection(settings: Settings): Map<Path, Metadata?> {
+        var files = listFiles(settings.collectionFolder, "cbz", "cbr")
+        return files.associateWith<Path, Metadata?> {
+            (readMetadata(archiveFile = it.toFile())
+                ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
+                ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
+            ) as Metadata?
         }
     }
 
     fun start(settings: Settings) {
-        testReadAndWrite()
-        readCollection(settings = settings)
+        //testReadAndWrite()
+        val collection = readCollection(settings = settings)
+        println(collection.keys)
     }
 }
 
