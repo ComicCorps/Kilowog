@@ -13,6 +13,9 @@ import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.FileVisitResult
 import java.util.stream.Collectors
 
 object Utils : Logging {
@@ -83,5 +86,22 @@ object Utils : Logging {
             logger.warn("Unable to walk folders", ioe)
         }
         return results
+    }
+
+    @Throws(IOException::class)
+    fun recursiveDeleteOnExit(path: Path) {
+        Files.walkFileTree(
+            path,
+            object: SimpleFileVisitor<Path>() {
+                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    file.toFile().deleteOnExit()
+                    return FileVisitResult.CONTINUE
+                }
+                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    dir.toFile().deleteOnExit()
+                    return FileVisitResult.CONTINUE
+                }
+            },
+        )
     }
 }

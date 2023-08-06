@@ -3,6 +3,7 @@ package github.buriedincode.kilowog
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
 import github.buriedincode.kilowog.Utils.listFiles
+import github.buriedincode.kilowog.Utils.recursiveDeleteOnExit
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.metadata.Metadata
 import github.buriedincode.kilowog.metadata.enums.Source
@@ -15,8 +16,8 @@ import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.file.Files
 import java.util.zip.ZipFile
+import kotlin.io.path.createTempFile
 
 object App : Logging {
     private fun testReadAndWrite() {
@@ -122,12 +123,12 @@ object App : Logging {
     }
 
     private fun readInfoFile(archiveFile: File, infoFile: String): String? {
-        val tempDir = Files.createTempDirectory(archiveFile.name).toFile()
-        val tempFile = File(tempDir, infoFile)
+        val tempFile = createTempFile(prefix = "${archiveFile.name}__${infoFile}__", suffix = ".xml").toFile()
+        tempFile.deleteOnExit()
 
         if (archiveFile.name.endsWith(".cbz")) {
             val zip = ZipFile(archiveFile)
-            val entry = zip.getEntry(infoFile) ?: return null
+            val entry = zip.getEntry(infoFile + ".xml") ?: return null
             zip.getInputStream(entry).use { input ->
                 tempFile.outputStream().use { output ->
                     input.copyTo(output)
@@ -136,7 +137,7 @@ object App : Logging {
             zip.close()
         } else if (archiveFile.name.endsWith(".cbr")) {
             val archive = Archive(archiveFile)
-            val fileHeader = findInfoFile(archive = archive, filename = infoFile) ?: return null
+            val fileHeader = findInfoFile(archive = archive, filename = infoFile + ".xml") ?: return null
             val fos = FileOutputStream(tempFile)
             archive.extractFile(fileHeader, fos)
             fos.close()
@@ -148,7 +149,7 @@ object App : Logging {
 
     @OptIn(ExperimentalSerializationApi::class)
     fun readMetadata(archiveFile: File): Metadata? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "Metadata.xml")
+        val content = readInfoFile(archiveFile = archiveFile, infoFile = "Metadata")
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
@@ -161,7 +162,7 @@ object App : Logging {
 
     @OptIn(ExperimentalSerializationApi::class)
     fun readMetronInfo(archiveFile: File): MetronInfo? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "MetronInfo.xml")
+        val content = readInfoFile(archiveFile = archiveFile, infoFile = "MetronInfo")
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
@@ -174,7 +175,7 @@ object App : Logging {
 
     @OptIn(ExperimentalSerializationApi::class)
     fun readComicInfo(archiveFile: File): ComicInfo? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "ComicInfo.xml")
+        val content = readInfoFile(archiveFile = archiveFile, infoFile = "ComicInfo")
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
@@ -192,7 +193,7 @@ object App : Logging {
                 ?: readMetronInfo(archiveFile = it.toFile())
                 ?: readComicInfo(archiveFile = it.toFile())
         }.forEach {
-            logger.info(it.toString())
+            // logger.info(it.toString())
         }
         files = listFiles(settings.collectionFolder, fileExtension = ".cbr")
         files.mapNotNull {
@@ -200,13 +201,13 @@ object App : Logging {
                 ?: readMetronInfo(archiveFile = it.toFile())
                 ?: readComicInfo(archiveFile = it.toFile())
         }.forEach {
-            logger.info(it.toString())
+            // logger.info(it.toString())
         }
     }
 
     fun start(settings: Settings) {
         testReadAndWrite()
-        // readCollection(settings = settings)
+        readCollection(settings = settings)
     }
 }
 
