@@ -124,7 +124,7 @@ data class ComicInfo(
         @XmlSerialName("ImageHeight")
         val imageHeight: Int? = null,
     )
-    
+
     fun toMetadata(): Metadata {
         TODO()
     }

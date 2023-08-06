@@ -191,7 +191,7 @@ data class MetronInfo(
         @XmlSerialName("ImageHeight")
         val imageHeight: Int? = null,
     )
-    
+
     fun toMetadata(): Metadata {
         TODO()
     }

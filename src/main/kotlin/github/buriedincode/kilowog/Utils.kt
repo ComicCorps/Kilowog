@@ -10,12 +10,12 @@ import nl.adaptivity.xmlutil.serialization.XML
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
 import java.nio.file.FileVisitOption
+import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.FileVisitResult
 import java.util.stream.Collectors
 
 object Utils : Logging {
@@ -92,7 +92,7 @@ object Utils : Logging {
     fun recursiveDeleteOnExit(path: Path) {
         Files.walkFileTree(
             path,
-            object: SimpleFileVisitor<Path>() {
+            object : SimpleFileVisitor<Path>() {
                 override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
                     file.toFile().deleteOnExit()
                     return FileVisitResult.CONTINUE

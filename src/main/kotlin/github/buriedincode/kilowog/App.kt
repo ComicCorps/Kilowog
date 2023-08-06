@@ -3,7 +3,6 @@ package github.buriedincode.kilowog
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
 import github.buriedincode.kilowog.Utils.listFiles
-import github.buriedincode.kilowog.Utils.recursiveDeleteOnExit
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.metadata.Metadata
 import github.buriedincode.kilowog.metadata.enums.Source
@@ -15,8 +14,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
-import java.nio.file.Path
 import java.io.FileOutputStream
+import java.nio.file.Path
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
 
@@ -155,7 +154,7 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (exc: MissingFieldException) {
-            //logger.fatal(content)
+            // logger.fatal(content)
             logger.fatal(exc)
             null
         }
@@ -168,7 +167,7 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (exc: MissingFieldException) {
-            //logger.fatal(content)
+            // logger.fatal(content)
             logger.fatal(exc)
             null
         }
@@ -181,7 +180,7 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (exc: MissingFieldException) {
-            //logger.fatal(content)
+            // logger.fatal(content)
             logger.fatal(exc)
             null
         }
@@ -190,15 +189,16 @@ object App : Logging {
     fun readCollection(settings: Settings): Map<Path, Metadata?> {
         var files = listFiles(settings.collectionFolder, "cbz", "cbr")
         return files.associateWith<Path, Metadata?> {
-            (readMetadata(archiveFile = it.toFile())
-                ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
-                ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
-            ) as Metadata?
+            (
+                readMetadata(archiveFile = it.toFile())
+                    ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
+                    ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
+                ) as Metadata?
         }
     }
 
     fun start(settings: Settings) {
-        //testReadAndWrite()
+        // testReadAndWrite()
         val collection = readCollection(settings = settings)
         println(collection.keys)
     }
