@@ -2,7 +2,6 @@ package github.buriedincode.kilowog
 
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
-import github.buriedincode.kilowog.Utils.listFiles
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.metadata.Metadata
 import github.buriedincode.kilowog.metadata.enums.Source
@@ -16,38 +15,40 @@ import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
+import kotlin.io.path.extension
 
 object App : Logging {
     private fun testReadAndWrite() {
         val startMetadata = Metadata(
             issue = Metadata.Issue(
-                publisher = Metadata.Publisher(
+                publisher = Metadata.Issue.Publisher(
                     resources = listOf(
-                        Metadata.Resource(
+                        Metadata.Issue.Resource(
                             source = Source.COMICVINE,
                             value = 1868,
                         ),
-                        Metadata.Resource(
+                        Metadata.Issue.Resource(
                             source = Source.LEAGUE_OF_COMIC_GEEKS,
                             value = 13,
                         ),
-                        Metadata.Resource(
+                        Metadata.Issue.Resource(
                             source = Source.METRON,
                             value = 20,
                         ),
                     ),
                     title = "BOOM! Studios",
                 ),
-                series = Metadata.Series(
+                series = Metadata.Issue.Series(
                     format = "Comic",
                     resources = listOf(
-                        Metadata.Resource(
+                        Metadata.Issue.Resource(
                             source = Source.COMICVINE,
                             value = 135280,
                         ),
-                        Metadata.Resource(
+                        Metadata.Issue.Resource(
                             source = Source.LEAGUE_OF_COMIC_GEEKS,
                             value = 150717,
                         ),
@@ -59,40 +60,40 @@ object App : Logging {
                 number = "1",
                 title = "Magic: The Gathering #1",
                 characters = listOf(
-                    Metadata.NamedResource(name = "Jace Beleren"),
-                    Metadata.NamedResource(name = "Kaya"),
-                    Metadata.NamedResource(name = "Lavinia"),
-                    Metadata.NamedResource(name = "Ral Zarek"),
-                    Metadata.NamedResource(name = "Vraska"),
+                    Metadata.Issue.NamedResource(name = "Jace Beleren"),
+                    Metadata.Issue.NamedResource(name = "Kaya"),
+                    Metadata.Issue.NamedResource(name = "Lavinia"),
+                    Metadata.Issue.NamedResource(name = "Ral Zarek"),
+                    Metadata.Issue.NamedResource(name = "Vraska"),
                 ),
                 coverDate = LocalDate(year = 2021, monthNumber = 4, dayOfMonth = 7),
                 credits = listOf(
-                    Metadata.Credit(
-                        creator = Metadata.NamedResource(name = "Aaron Bartling"),
+                    Metadata.Issue.Credit(
+                        creator = Metadata.Issue.NamedResource(name = "Aaron Bartling"),
                         roles = listOf("Variant Cover Artist"),
                     ),
-                    Metadata.Credit(
-                        creator = Metadata.NamedResource(name = "Ig Guara"),
+                    Metadata.Issue.Credit(
+                        creator = Metadata.Issue.NamedResource(name = "Ig Guara"),
                         roles = listOf("Artist", "Variant Cover Artist"),
                     ),
-                    Metadata.Credit(
-                        creator = Metadata.NamedResource(name = "Scott Newman"),
+                    Metadata.Issue.Credit(
+                        creator = Metadata.Issue.NamedResource(name = "Scott Newman"),
                         roles = listOf("Designer"),
                     ),
                 ),
                 genres = listOf("Fantasy", "Other"),
                 language = "en",
                 locations = listOf(
-                    Metadata.NamedResource(name = "Ravnica"),
-                    Metadata.NamedResource(name = "Zendikar"),
+                    Metadata.Issue.NamedResource(name = "Ravnica"),
+                    Metadata.Issue.NamedResource(name = "Zendikar"),
                 ),
                 pageCount = 32,
                 resources = listOf(
-                    Metadata.Resource(
+                    Metadata.Issue.Resource(
                         source = Source.COMICVINE,
                         value = 842154,
                     ),
-                    Metadata.Resource(
+                    Metadata.Issue.Resource(
                         source = Source.LEAGUE_OF_COMIC_GEEKS,
                         value = 3694173,
                     ),
@@ -100,11 +101,10 @@ object App : Logging {
                 storeDate = LocalDate(year = 2021, monthNumber = 4, dayOfMonth = 7),
                 summary = "* A new beginning for the pop culture",
                 teams = listOf(
-                    Metadata.NamedResource(name = "Planeswalkers"),
+                    Metadata.Issue.NamedResource(name = "Planeswalkers"),
                 ),
-                notes = "Scraped metadata from Comixology [CMXDB929703], [ASINB08ZKFQBRJ]",
             ),
-            meta = Metadata.Meta(),
+            notes = "Scraped metadata from Comixology [CMXDB929703], [ASINB08ZKFQBRJ]",
         )
         logger.warn(startMetadata)
         val startMetadataStr = Utils.XML_MAPPER.encodeToString(startMetadata)
@@ -126,18 +126,18 @@ object App : Logging {
         val tempFile = createTempFile(prefix = "${archiveFile.name}__${infoFile}__", suffix = ".xml").toFile()
         tempFile.deleteOnExit()
 
-        if (archiveFile.name.endsWith(".cbz")) {
+        if (archiveFile.extension == "cbz") {
             val zip = ZipFile(archiveFile)
-            val entry = zip.getEntry(infoFile + ".xml") ?: return null
+            val entry = zip.getEntry("$infoFile.xml") ?: return null
             zip.getInputStream(entry).use { input ->
                 tempFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
             }
             zip.close()
-        } else if (archiveFile.name.endsWith(".cbr")) {
+        } else if (archiveFile.extension == ".cbr") {
             val archive = Archive(archiveFile)
-            val fileHeader = findInfoFile(archive = archive, filename = infoFile + ".xml") ?: return null
+            val fileHeader = findInfoFile(archive = archive, filename = "$infoFile.xml") ?: return null
             val fos = FileOutputStream(tempFile)
             archive.extractFile(fileHeader, fos)
             fos.close()
@@ -187,13 +187,11 @@ object App : Logging {
     }
 
     fun readCollection(settings: Settings): Map<Path, Metadata?> {
-        var files = listFiles(settings.collectionFolder, "cbz", "cbr")
-        return files.associateWith<Path, Metadata?> {
-            (
-                readMetadata(archiveFile = it.toFile())
-                    ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
-                    ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
-                ) as Metadata?
+        val files = Utils.listFiles(settings.collectionFolder, "cbz", "cbr")
+        return files.associateWith {
+            readMetadata(archiveFile = it.toFile())
+                ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
+                ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
         }
     }
 
@@ -201,6 +199,15 @@ object App : Logging {
         // testReadAndWrite()
         val collection = readCollection(settings = settings)
         println(collection.keys)
+        collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
+            val newLocation = Paths.get(
+                settings.collectionFolder.toString(),
+                metadata.issue.publisher.getFilename(),
+                metadata.issue.series.getFilename(),
+                "${metadata.issue.getFilename()}.${file.extension}",
+            )
+            println("$file => $newLocation")
+        }
     }
 }
 

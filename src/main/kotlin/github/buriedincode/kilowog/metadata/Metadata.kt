@@ -16,8 +16,13 @@ import nl.adaptivity.xmlutil.serialization.XmlValue
 data class Metadata(
     @XmlSerialName("Data")
     var issue: Issue,
+    @XmlSerialName("Pages")
+    @XmlChildrenName("Page")
+    var pages: List<Page> = emptyList(),
+    @XmlSerialName("Notes")
+    var notes: String? = null,
     @XmlSerialName("Meta")
-    var meta: Meta,
+    var meta: Meta = Meta(),
 ) {
     @XmlSerialName("noNamespaceSchemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi")
     @XmlElement(false)
@@ -64,82 +69,92 @@ data class Metadata(
         @XmlSerialName("Teams")
         @XmlChildrenName("Team")
         var teams: List<NamedResource> = emptyList(),
-        @XmlSerialName("Pages")
-        @XmlChildrenName("Page")
-        var pages: List<Page> = emptyList(),
-        @XmlSerialName("Notes")
-        var notes: String? = null,
-    )
+    ) {
 
-    @Serializable
-    data class Publisher(
-        @XmlSerialName("Imprint")
-        var imprint: String? = null,
-        @XmlSerialName("Resources")
-        @XmlChildrenName("Resource")
-        var resources: List<Resource> = emptyList(),
-        @XmlSerialName("Title")
-        var title: String,
-    )
+        @Serializable
+        data class Publisher(
+            @XmlSerialName("Imprint")
+            var imprint: String? = null,
+            @XmlSerialName("Resources")
+            @XmlChildrenName("Resource")
+            var resources: List<Resource> = emptyList(),
+            @XmlSerialName("Title")
+            var title: String,
+        ) {
+            fun getFilename(): String = Utils.sanitize(if (imprint == null) title else "$title ($imprint)")
+        }
 
-    @Serializable
-    data class Resource(
-        @XmlElement(false)
-        var source: Source,
-        @XmlValue
-        var value: Int,
-    )
+        @Serializable
+        data class Resource(
+            @XmlElement(false)
+            var source: Source,
+            @XmlValue
+            var value: Int,
+        )
 
-    @Serializable
-    data class Series(
-        @XmlSerialName("Format")
-        var format: String = "Comic",
-        @XmlSerialName("Resources")
-        @XmlChildrenName("Resource")
-        var resources: List<Resource> = emptyList(),
-        @XmlSerialName("StartYear")
-        var startYear: Int? = null,
-        @XmlSerialName("Title")
-        var title: String,
-        @XmlSerialName("Volume")
-        var volume: Int = 1,
-    )
+        @Serializable
+        data class Series(
+            @XmlSerialName("Format")
+            var format: String = "Comic",
+            @XmlSerialName("Resources")
+            @XmlChildrenName("Resource")
+            var resources: List<Resource> = emptyList(),
+            @XmlSerialName("StartYear")
+            var startYear: Int? = null,
+            @XmlSerialName("Title")
+            var title: String,
+            @XmlSerialName("Volume")
+            var volume: Int = 1,
+        ) {
+            fun getFilename(): String {
+                var output = if (volume == 1) title else "$title v$volume"
+                output += "_($format)"
+                return Utils.sanitize(output)
+            }
+        }
 
-    @Serializable
-    data class NamedResource(
-        @XmlSerialName("Name")
-        var name: String,
-        @XmlSerialName("Resources")
-        @XmlChildrenName("Resource")
-        var resources: List<Resource> = emptyList(),
-    )
+        @Serializable
+        data class NamedResource(
+            @XmlSerialName("Name")
+            var name: String,
+            @XmlSerialName("Resources")
+            @XmlChildrenName("Resource")
+            var resources: List<Resource> = emptyList(),
+        )
 
-    @Serializable
-    data class Credit(
-        @XmlSerialName("Creator")
-        var creator: NamedResource,
-        @XmlSerialName("Roles")
-        @XmlChildrenName("Role")
-        var roles: List<String> = emptyList(),
-    )
+        @Serializable
+        data class Credit(
+            @XmlSerialName("Creator")
+            var creator: NamedResource,
+            @XmlSerialName("Roles")
+            @XmlChildrenName("Role")
+            var roles: List<String> = emptyList(),
+        )
 
-    @Serializable
-    data class StoryArc(
-        @XmlSerialName("Title")
-        var title: String,
-        @XmlSerialName("Number")
-        var number: Int? = null,
-        @XmlSerialName("Resources")
-        @XmlChildrenName("Resource")
-        var resources: List<Resource> = emptyList(),
-    )
+        @Serializable
+        data class StoryArc(
+            @XmlSerialName("Title")
+            var title: String,
+            @XmlSerialName("Number")
+            var number: Int? = null,
+            @XmlSerialName("Resources")
+            @XmlChildrenName("Resource")
+            var resources: List<Resource> = emptyList(),
+        )
+
+        fun getFilename(): String {
+            val volumeTitle = if (series.volume == 1) series.title else "$series.title v${series.volume}"
+            val output = if (number != null) "_#$number" else if (title != null) "_$title" else ""
+            return Utils.sanitize(volumeTitle + output)
+        }
+    }
 
     @Serializable
     data class Page(
         @XmlElement(false)
         var doublePage: Boolean = false,
         @XmlElement(false)
-        var fileSize: Long = 0,
+        var fileSize: Long = 0L,
         @XmlElement(false)
         var filename: String,
         @XmlElement(false)

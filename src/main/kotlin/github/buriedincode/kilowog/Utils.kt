@@ -67,6 +67,10 @@ object Utils : Logging {
         }
     }
 
+    inline fun <reified T : Enum<T>> String.asEnumOrNull(): T? {
+        return enumValues<T>().firstOrNull { it.name.equals(this, ignoreCase = true) }
+    }
+
     inline fun <reified T : Enum<T>> T.titleCase(): String {
         return this.name.lowercase().split("_").joinToString(" ") {
             it.replaceFirstChar(Char::uppercaseChar)
@@ -103,5 +107,12 @@ object Utils : Logging {
                 }
             },
         )
+    }
+
+    fun sanitize(value: String): String {
+        var output: String = value.replace("[\\\\/:*?\"<>|]+".toRegex(), "")
+        output = output.replace("-", " ")
+        output = output.split(" ").filterNot { it.isBlank() }.joinToString(" ") { it.trim() }
+        return output.replace(" ", "-")
     }
 }

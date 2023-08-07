@@ -1,5 +1,8 @@
 package github.buriedincode.kilowog.metroninfo
 
+import github.buriedincode.kilowog.Utils.asEnumOrNull
+import github.buriedincode.kilowog.Utils.titleCase
+import github.buriedincode.kilowog.metadata.Metadata
 import github.buriedincode.kilowog.metroninfo.enums.AgeRating
 import github.buriedincode.kilowog.metroninfo.enums.Format
 import github.buriedincode.kilowog.metroninfo.enums.Genre
@@ -12,6 +15,7 @@ import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
+import github.buriedincode.kilowog.metadata.enums.Source as MetadataSource
 
 @Serializable
 data class MetronInfo(
@@ -193,6 +197,111 @@ data class MetronInfo(
     )
 
     fun toMetadata(): Metadata {
-        TODO()
+        val source: MetadataSource? = id?.source?.name?.asEnumOrNull<MetadataSource>()
+        return Metadata(
+            issue = Metadata.Issue(
+                publisher = Metadata.Issue.Publisher(
+                    resources = listOfNotNull(
+                        source?.let {
+                            Metadata.Issue.Resource(source = it, value = publisher.id)
+                        },
+                    ),
+                    title = this.publisher.value,
+                ),
+                series = Metadata.Issue.Series(
+                    format = this.series.format?.titleCase() ?: "Comic",
+                    resources = listOfNotNull(
+                        source?.let {
+                            Metadata.Issue.Resource(source = it, value = series.id)
+                        },
+                    ),
+                    title = this.series.name,
+                    volume = this.series.volume ?: 1,
+                ),
+                number = this.number,
+                title = this.collectionTitle,
+                characters = this.characters.map { resource ->
+                    Metadata.Issue.NamedResource(
+                        name = resource.value,
+                        resources = listOfNotNull(
+                            source?.let {
+                                Metadata.Issue.Resource(source = it, value = resource.id)
+                            },
+                        ),
+                    )
+                },
+                coverDate = this.coverDate,
+                credits = this.credits.map { credit ->
+                    Metadata.Issue.Credit(
+                        creator = Metadata.Issue.NamedResource(
+                            name = credit.creator.value,
+                            resources = listOfNotNull(
+                                source?.let {
+                                    Metadata.Issue.Resource(source = it, value = credit.creator.id)
+                                },
+                            ),
+                        ),
+                        roles = credit.roles.map { it.value.titleCase() },
+                    )
+                },
+                genres = this.genres.map {
+                    it.value.titleCase()
+                },
+                language = this.series.lang,
+                locations = this.locations.map { location ->
+                    Metadata.Issue.NamedResource(
+                        name = location.value,
+                        resources = listOfNotNull(
+                            source?.let {
+                                Metadata.Issue.Resource(source = it, value = location.id)
+                            },
+                        ),
+                    )
+                },
+                pageCount = this.pageCount,
+                resources = listOfNotNull(
+                    source?.let {
+                        this.id?.let { id ->
+                            Metadata.Issue.Resource(source = source, value = id.value)
+                        }
+                    },
+                ),
+                storeDate = this.storeDate,
+                storyArcs = this.arcs.map { arc ->
+                    Metadata.Issue.StoryArc(
+                        title = arc.name,
+                        number = arc.number,
+                        resources = listOfNotNull(
+                            source?.let {
+                                Metadata.Issue.Resource(source = it, value = arc.id)
+                            },
+                        ),
+                    )
+                },
+                summary = this.summary,
+                teams = this.teams.map { team ->
+                    Metadata.Issue.NamedResource(
+                        name = team.value,
+                        resources = listOfNotNull(
+                            source?.let {
+                                Metadata.Issue.Resource(source = it, value = team.id)
+                            },
+                        ),
+                    )
+                },
+            ),
+            pages = this.pages.map {
+                Metadata.Page(
+                    doublePage = it.doublePage,
+                    fileSize = it.imageSize ?: 0L,
+                    filename = "",
+                    imageHeight = it.imageHeight ?: 0,
+                    imageWidth = it.imageWidth ?: 0,
+                    index = it.image,
+                    type = it.type.titleCase(),
+                )
+            },
+            notes = this.notes,
+        )
     }
 }

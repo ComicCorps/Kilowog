@@ -4,6 +4,7 @@ import github.buriedincode.kilowog.comicinfo.enums.AgeRating
 import github.buriedincode.kilowog.comicinfo.enums.Manga
 import github.buriedincode.kilowog.comicinfo.enums.PageType
 import github.buriedincode.kilowog.comicinfo.enums.YesNo
+import github.buriedincode.kilowog.metadata.Metadata
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
@@ -126,6 +127,17 @@ data class ComicInfo(
     )
 
     fun toMetadata(): Metadata {
-        TODO()
+        return Metadata(
+            issue = Metadata.Issue(
+                publisher = Metadata.Issue.Publisher(
+                    title = this.publisher ?: "Missing Publisher title",
+                ),
+                series = Metadata.Issue.Series(
+                    title = this.series ?: "Missing Series title",
+                ),
+                number = number,
+                title = title,
+            ),
+        )
     }
 }
