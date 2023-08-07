@@ -16,13 +16,13 @@ import nl.adaptivity.xmlutil.serialization.XmlValue
 data class Metadata(
     @XmlSerialName("Data")
     var issue: Issue,
+    @XmlSerialName("Meta")
+    var meta: Meta = Meta(),
+    @XmlSerialName("Notes")
+    var notes: String? = null,
     @XmlSerialName("Pages")
     @XmlChildrenName("Page")
     var pages: List<Page> = emptyList(),
-    @XmlSerialName("Notes")
-    var notes: String? = null,
-    @XmlSerialName("Meta")
-    var meta: Meta = Meta(),
 ) {
     @XmlSerialName("noNamespaceSchemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi")
     @XmlElement(false)
@@ -30,14 +30,6 @@ data class Metadata(
 
     @Serializable
     data class Issue(
-        @XmlSerialName("Publisher")
-        var publisher: Publisher,
-        @XmlSerialName("Series")
-        var series: Series,
-        @XmlSerialName("Number")
-        var number: String? = null,
-        @XmlSerialName("Title")
-        var title: String? = null,
         @XmlSerialName("Characters")
         @XmlChildrenName("Character")
         var characters: List<NamedResource> = emptyList(),
@@ -54,11 +46,17 @@ data class Metadata(
         @XmlSerialName("Locations")
         @XmlChildrenName("Location")
         var locations: List<NamedResource> = emptyList(),
+        @XmlSerialName("Number")
+        var number: String? = null,
         @XmlSerialName("PageCount")
         var pageCount: Int = 0,
+        @XmlSerialName("Publisher")
+        var publisher: Publisher,
         @XmlSerialName("Resources")
         @XmlChildrenName("Resource")
         var resources: List<Resource> = emptyList(),
+        @XmlSerialName("Series")
+        var series: Series,
         @XmlSerialName("StoreDate")
         var storeDate: LocalDate? = null,
         @XmlSerialName("StoryArcs")
@@ -69,6 +67,8 @@ data class Metadata(
         @XmlSerialName("Teams")
         @XmlChildrenName("Team")
         var teams: List<NamedResource> = emptyList(),
+        @XmlSerialName("Title")
+        var title: String? = null,
     ) {
 
         @Serializable
@@ -133,13 +133,13 @@ data class Metadata(
 
         @Serializable
         data class StoryArc(
-            @XmlSerialName("Title")
-            var title: String,
             @XmlSerialName("Number")
             var number: Int? = null,
             @XmlSerialName("Resources")
             @XmlChildrenName("Resource")
             var resources: List<Resource> = emptyList(),
+            @XmlSerialName("Title")
+            var title: String,
         )
 
         fun getFilename(): String {
@@ -154,9 +154,9 @@ data class Metadata(
         @XmlElement(false)
         var doublePage: Boolean = false,
         @XmlElement(false)
-        var fileSize: Long = 0L,
-        @XmlElement(false)
         var filename: String,
+        @XmlElement(false)
+        var fileSize: Long = 0L,
         @XmlElement(false)
         var imageHeight: Int = 0,
         @XmlElement(false)
@@ -177,9 +177,9 @@ data class Metadata(
 
     @Serializable
     data class Tool(
-        @XmlElement(false)
-        val version: String = Utils.VERSION,
         @XmlValue
         val value: String = "Dex-Starr",
+        @XmlElement(false)
+        val version: String = Utils.VERSION,
     )
 }

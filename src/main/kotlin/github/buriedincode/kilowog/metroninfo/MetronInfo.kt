@@ -19,67 +19,67 @@ import github.buriedincode.kilowog.metadata.enums.Source as MetadataSource
 
 @Serializable
 data class MetronInfo(
-    @XmlSerialName("ID")
-    val id: Source? = null,
-    @XmlSerialName("Publisher")
-    val publisher: Resource,
-    @XmlSerialName("Series")
-    val series: Series,
+    @XmlSerialName("AgeRating")
+    val ageRating: AgeRating = AgeRating.UNKNOWN,
+    @XmlSerialName("Arcs")
+    @XmlChildrenName("Arc")
+    val arcs: List<Arc> = emptyList(),
+    @XmlSerialName("BlackAndWhite")
+    val blackAndWhite: Boolean = false,
+    @XmlSerialName("Characters")
+    @XmlChildrenName("Character")
+    val characters: List<Resource> = emptyList(),
     @XmlSerialName("CollectionTitle")
     val collectionTitle: String? = null,
+    @XmlSerialName("CoverDate")
+    val coverDate: LocalDate,
+    @XmlSerialName("Credits")
+    @XmlChildrenName("Credit")
+    val credits: List<Credit> = emptyList(),
+    @XmlSerialName("Genres")
+    @XmlChildrenName("Genre")
+    val genres: List<GenreResource> = emptyList(),
+    @XmlSerialName("GTIN")
+    val gtin: Gtin? = null,
+    @XmlSerialName("ID")
+    val id: Source? = null,
+    @XmlSerialName("Locations")
+    @XmlChildrenName("Location")
+    val locations: List<Resource> = emptyList(),
     @XmlSerialName("Name")
     val number: String? = null,
+    @XmlSerialName("Notes")
+    val notes: String? = null,
+    @XmlSerialName("PageCount")
+    val pageCount: Int = 0,
+    @XmlSerialName("Pages")
+    @XmlChildrenName("Page")
+    val pages: List<Page> = emptyList(),
+    @XmlSerialName("Prices")
+    @XmlChildrenName("Price")
+    val prices: List<Price> = emptyList(),
+    @XmlSerialName("Publisher")
+    val publisher: Resource,
+    @XmlSerialName("Reprints")
+    @XmlChildrenName("Reprint")
+    val reprints: List<Resource> = emptyList(),
+    @XmlSerialName("Series")
+    val series: Series,
+    @XmlSerialName("StoreDate")
+    val storeDate: LocalDate? = null,
     @XmlSerialName("Stories")
     @XmlChildrenName("Story")
     val stories: List<Resource> = emptyList(),
     @XmlSerialName("Summary")
     val summary: String? = null,
-    @XmlSerialName("Prices")
-    @XmlChildrenName("Price")
-    val prices: List<Price> = emptyList(),
-    @XmlSerialName("CoverDate")
-    val coverDate: LocalDate,
-    @XmlSerialName("StoreDate")
-    val storeDate: LocalDate? = null,
-    @XmlSerialName("PageCount")
-    val pageCount: Int = 0,
-    @XmlSerialName("Notes")
-    val notes: String? = null,
-    @XmlSerialName("Genres")
-    @XmlChildrenName("Genre")
-    val genres: List<GenreResource> = emptyList(),
     @XmlSerialName("Tags")
     @XmlChildrenName("Tag")
     val tags: List<Resource> = emptyList(),
-    @XmlSerialName("Arcs")
-    @XmlChildrenName("Arc")
-    val arcs: List<Arc> = emptyList(),
-    @XmlSerialName("Characters")
-    @XmlChildrenName("Character")
-    val characters: List<Resource> = emptyList(),
     @XmlSerialName("Teams")
     @XmlChildrenName("Team")
     val teams: List<Resource> = emptyList(),
-    @XmlSerialName("Locations")
-    @XmlChildrenName("Location")
-    val locations: List<Resource> = emptyList(),
-    @XmlSerialName("Reprints")
-    @XmlChildrenName("Reprint")
-    val reprints: List<Resource> = emptyList(),
-    @XmlSerialName("GTIN")
-    val gtin: Gtin? = null,
-    @XmlSerialName("BlackAndWhite")
-    val blackAndWhite: Boolean = false,
-    @XmlSerialName("AgeRating")
-    val ageRating: AgeRating = AgeRating.UNKNOWN,
     @XmlSerialName("URL")
     val url: String? = null,
-    @XmlSerialName("Credits")
-    @XmlChildrenName("Credit")
-    val credits: List<Credit> = emptyList(),
-    @XmlSerialName("Pages")
-    @XmlChildrenName("Page")
-    val pages: List<Page> = emptyList(),
 ) {
     @XmlSerialName("noNamespaceSchemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi")
     @XmlElement(false)
@@ -103,18 +103,18 @@ data class MetronInfo(
 
     @Serializable
     data class Series(
-        @XmlElement(false)
-        val lang: String = "en",
+        @XmlSerialName("Format")
+        val format: Format? = null,
         @XmlElement(false)
         val id: Int,
+        @XmlElement(false)
+        val lang: String = "en",
         @XmlSerialName("Name")
         val name: String,
         @XmlSerialName("SortName")
         val sortName: String? = null,
         @XmlSerialName("Volume")
         val volume: Int? = null,
-        @XmlSerialName("Format")
-        val format: Format? = null,
     )
 
     @Serializable
@@ -171,55 +171,35 @@ data class MetronInfo(
     @Serializable
     data class Page(
         @XmlElement(false)
-        @XmlSerialName("Image")
-        val image: Int,
-        @XmlElement(false)
-        @XmlSerialName("Type")
-        val type: PageType = PageType.STORY,
+        @XmlSerialName("Bookmark")
+        val bookmark: String? = null,
         @XmlElement(false)
         @XmlSerialName("DoublePage")
         val doublePage: Boolean = false,
         @XmlElement(false)
+        @XmlSerialName("Image")
+        val image: Int,
+        @XmlElement(false)
+        @XmlSerialName("ImageHeight")
+        val imageHeight: Int? = null,
+        @XmlElement(false)
         @XmlSerialName("ImageSize")
         val imageSize: Long? = null,
-        @XmlElement(false)
-        @XmlSerialName("Key")
-        val key: String? = null,
-        @XmlElement(false)
-        @XmlSerialName("Bookmark")
-        val bookmark: String? = null,
         @XmlElement(false)
         @XmlSerialName("ImageWidth")
         val imageWidth: Int? = null,
         @XmlElement(false)
-        @XmlSerialName("ImageHeight")
-        val imageHeight: Int? = null,
+        @XmlSerialName("Key")
+        val key: String? = null,
+        @XmlElement(false)
+        @XmlSerialName("Type")
+        val type: PageType = PageType.STORY,
     )
 
     fun toMetadata(): Metadata {
         val source: MetadataSource? = id?.source?.name?.asEnumOrNull<MetadataSource>()
         return Metadata(
             issue = Metadata.Issue(
-                publisher = Metadata.Issue.Publisher(
-                    resources = listOfNotNull(
-                        source?.let {
-                            Metadata.Issue.Resource(source = it, value = publisher.id)
-                        },
-                    ),
-                    title = this.publisher.value,
-                ),
-                series = Metadata.Issue.Series(
-                    format = this.series.format?.titleCase() ?: "Comic",
-                    resources = listOfNotNull(
-                        source?.let {
-                            Metadata.Issue.Resource(source = it, value = series.id)
-                        },
-                    ),
-                    title = this.series.name,
-                    volume = this.series.volume ?: 1,
-                ),
-                number = this.number,
-                title = this.collectionTitle,
                 characters = this.characters.map { resource ->
                     Metadata.Issue.NamedResource(
                         name = resource.value,
@@ -258,7 +238,16 @@ data class MetronInfo(
                         ),
                     )
                 },
+                number = this.number,
                 pageCount = this.pageCount,
+                publisher = Metadata.Issue.Publisher(
+                    resources = listOfNotNull(
+                        source?.let {
+                            Metadata.Issue.Resource(source = it, value = publisher.id)
+                        },
+                    ),
+                    title = this.publisher.value,
+                ),
                 resources = listOfNotNull(
                     source?.let {
                         this.id?.let { id ->
@@ -266,16 +255,26 @@ data class MetronInfo(
                         }
                     },
                 ),
+                series = Metadata.Issue.Series(
+                    format = this.series.format?.titleCase() ?: "Comic",
+                    resources = listOfNotNull(
+                        source?.let {
+                            Metadata.Issue.Resource(source = it, value = series.id)
+                        },
+                    ),
+                    title = this.series.name,
+                    volume = this.series.volume ?: 1,
+                ),
                 storeDate = this.storeDate,
                 storyArcs = this.arcs.map { arc ->
                     Metadata.Issue.StoryArc(
-                        title = arc.name,
                         number = arc.number,
                         resources = listOfNotNull(
                             source?.let {
                                 Metadata.Issue.Resource(source = it, value = arc.id)
                             },
                         ),
+                        title = arc.name,
                     )
                 },
                 summary = this.summary,
@@ -289,19 +288,20 @@ data class MetronInfo(
                         ),
                     )
                 },
+                title = this.collectionTitle,
             ),
+            notes = this.notes,
             pages = this.pages.map {
                 Metadata.Page(
                     doublePage = it.doublePage,
-                    fileSize = it.imageSize ?: 0L,
                     filename = "",
+                    fileSize = it.imageSize ?: 0L,
                     imageHeight = it.imageHeight ?: 0,
                     imageWidth = it.imageWidth ?: 0,
                     index = it.image,
                     type = it.type.titleCase(),
                 )
             },
-            notes = this.notes,
         )
     }
 }
