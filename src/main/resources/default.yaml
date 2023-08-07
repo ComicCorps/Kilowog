@@ -1,0 +1,13 @@
+collection-folder: "${HOME}/.local/share/kilowog"
+comicvine:
+  api-key: ~
+league-of-comic-geeks:
+  access-token: ~
+  client-id: ~
+  client-secret: ~
+marvel:
+  public-key: ~
+  private-key: ~
+metron:
+  username: ~
+  password: ~

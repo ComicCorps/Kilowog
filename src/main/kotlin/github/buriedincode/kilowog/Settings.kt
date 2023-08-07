@@ -9,8 +9,16 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 data class Comicvine(val apiKey: Secret?)
+data class LeagueOfComicGeeks(val accessToken: Secret?, val clientId: String?, val clientSecret: Secret?)
+data class Marvel(val publicKey: String?, val privateKey: Secret?)
 data class Metron(val username: String?, val password: Secret?)
-data class Settings(val comicvine: Comicvine, val metron: Metron, val collectionFolder: Path) {
+data class Settings(
+    val collectionFolder: Path,
+    val comicvine: Comicvine,
+    val leagueOfComicGeeks: LeagueOfComicGeeks,
+    val marvel: Marvel,
+    val metron: Metron,
+) {
     companion object : Logging {
         fun load(): Settings = ConfigLoaderBuilder.default()
             .addPathSource(
@@ -23,7 +31,7 @@ data class Settings(val comicvine: Comicvine, val metron: Metron, val collection
                 optional = true,
                 allowEmpty = true,
             )
-            .addResourceSource("/default.properties")
+            .addResourceSource("/default.yaml")
             .build()
             .loadConfigOrThrow<Settings>()
     }

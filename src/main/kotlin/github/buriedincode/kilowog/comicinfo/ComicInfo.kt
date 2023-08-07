@@ -1,10 +1,12 @@
 package github.buriedincode.kilowog.comicinfo
 
+import github.buriedincode.kilowog.Utils.titleCase
 import github.buriedincode.kilowog.comicinfo.enums.AgeRating
 import github.buriedincode.kilowog.comicinfo.enums.Manga
 import github.buriedincode.kilowog.comicinfo.enums.PageType
 import github.buriedincode.kilowog.comicinfo.enums.YesNo
 import github.buriedincode.kilowog.metadata.Metadata
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
@@ -19,43 +21,43 @@ data class ComicInfo(
     @XmlSerialName("AlternateNumber")
     val alternateNumber: String? = null,
     @XmlSerialName("AlternateSeries")
-    val alternateSeries: String? = null,
+    var alternateSeries: String? = null,
     @XmlSerialName("BlackAndWhite")
     val blackAndWhite: YesNo = YesNo.UNKNOWN,
     @XmlSerialName("Characters")
-    val characters: String? = null,
+    var characters: String? = null,
     @XmlSerialName("Colorist")
-    val colourist: String? = null,
+    var colourists: String? = null,
     @XmlSerialName("CommunityRating")
     val communityRating: Double? = null,
     @XmlSerialName("Count")
     val count: Int? = null,
     @XmlSerialName("CoverArtist")
-    val coverArtist: String? = null,
+    var coverArtists: String? = null,
     @XmlSerialName("Day")
-    val day: Int? = null,
+    var day: Int? = null,
     @XmlSerialName("Editor")
-    val editor: String? = null,
+    var editors: String? = null,
     @XmlSerialName("Format")
     val format: String? = null,
     @XmlSerialName("Genre")
-    val genre: String? = null,
+    var genres: String? = null,
     @XmlSerialName("Imprint")
     val imprint: String? = null,
     @XmlSerialName("Inker")
-    val inker: String? = null,
+    var inkers: String? = null,
     @XmlSerialName("LanguageISO")
     val language: String? = null,
     @XmlSerialName("Letterer")
-    val letterer: String? = null,
+    var letterers: String? = null,
     @XmlSerialName("Locations")
-    val locations: String? = null,
+    var locations: String? = null,
     @XmlSerialName("MainCharacterOrTeam")
     val mainCharacterOrTeam: String? = null,
     @XmlSerialName("Manga")
     val manga: Manga = Manga.UNKNOWN,
     @XmlSerialName("Month")
-    val month: Int? = null,
+    var month: Int? = null,
     @XmlSerialName("Notes")
     val notes: String? = null,
     @XmlSerialName("Number")
@@ -66,7 +68,7 @@ data class ComicInfo(
     @XmlChildrenName("Page")
     val pages: List<Page> = emptyList(),
     @XmlSerialName("Penciller")
-    val penciller: String? = null,
+    var pencillers: String? = null,
     @XmlSerialName("Publisher")
     val publisher: String? = null,
     @XmlSerialName("Review")
@@ -78,11 +80,11 @@ data class ComicInfo(
     @XmlSerialName("SeriesGroup")
     val seriesGroup: String? = null,
     @XmlSerialName("StoryArc")
-    val storyArc: String? = null,
+    var storyArcs: String? = null,
     @XmlSerialName("Summary")
     val summary: String? = null,
     @XmlSerialName("Teams")
-    val teams: String? = null,
+    var teams: String? = null,
     @XmlSerialName("Title")
     val title: String? = null,
     @XmlSerialName("Volume")
@@ -90,9 +92,9 @@ data class ComicInfo(
     @XmlSerialName("Web")
     val web: String? = null,
     @XmlSerialName("Writer")
-    val writer: String? = null,
+    var writers: String? = null,
     @XmlSerialName("Year")
-    val year: Int? = null,
+    var year: Int? = null,
 ) {
     @XmlSerialName("noNamespaceSchemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi")
     @XmlElement(false)
@@ -126,68 +128,145 @@ data class ComicInfo(
         val type: PageType = PageType.STORY,
     )
 
+    var characterList: List<String>
+        get() = this.characters?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.characters = value.joinToString(", ")
+        }
+
+    var colouristList: List<String>
+        get() = this.colourists?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.colourists = value.joinToString(", ")
+        }
+
+    var coverArtistList: List<String>
+        get() = this.coverArtists?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.coverArtists = value.joinToString(", ")
+        }
+
     var coverDate: LocalDate?
         get() = this.year?.let {
             LocalDate(year = it, monthNumber = this.month ?: 1, dayOfMonth = this.day ?: 1)
         }
-        set(value: LocalDate?) {
+        set(value) {
             this.year = value?.year
             this.month = value?.monthNumber
-            this.day = value?.day
+            this.day = value?.dayOfMonth
         }
 
     val credits: Map<String, List<String>>
         get() {
-            val output = mutableMap<String, List<String>>()
-            this.writer.split(",").map { it.trim() }.forEach {
+            val output = mutableMapOf<String, MutableList<String>>()
+            this.writerList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Writer")
+                output[it]?.add("Writer")
             }
-            this.penciller.split(",").map { it.trim() }.forEach {
+            this.pencillerList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Penciller")
+                output[it]?.add("Penciller")
             }
-            this.inker.split(",").map { it.trim() }.forEach {
+            this.inkerList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Inker")
+                output[it]?.add("Inker")
             }
-            this.colourist.split(",").map { it.trim() }.forEach {
+            this.colouristList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Colourist")
+                output[it]?.add("Colourist")
             }
-            this.letterer.split(",").map { it.trim() }.forEach {
+            this.lettererList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Letterer")
+                output[it]?.add("Letterer")
             }
-            this.coverArtist.split(",").map { it.trim() }.forEach {
+            this.coverArtistList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Cover Artist")
+                output[it]?.add("Cover Artist")
             }
-            this.editor.split(",").map { it.trim() }.forEach {
+            this.editorList.forEach {
                 if (!output.contains(it)) {
-                    output[it] = mutableList<String>()
+                    output[it] = mutableListOf()
                 }
-                output[it].add("Editor")
+                output[it]?.add("Editor")
             }
             return output
+        }
+
+    var editorList: List<String>
+        get() = this.editors?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.editors = value.joinToString(", ")
+        }
+
+    var genreList: List<String>
+        get() = this.genres?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.genres = value.joinToString(", ")
+        }
+
+    var inkerList: List<String>
+        get() = this.inkers?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.inkers = value.joinToString(", ")
+        }
+
+    var lettererList: List<String>
+        get() = this.letterers?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.letterers = value.joinToString(", ")
+        }
+
+    var locationList: List<String>
+        get() = this.locations?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.locations = value.joinToString(", ")
+        }
+
+    var pencillerList: List<String>
+        get() = this.pencillers?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.pencillers = value.joinToString(", ")
+        }
+
+    var storyArcList: List<String>
+        get() {
+            val output: MutableList<String> = this.storyArcs?.split(",")?.map { it.trim() }?.toMutableList() ?: mutableListOf()
+            output.addAll(this.alternateSeries?.split(",")?.map { it.trim() } ?: emptyList())
+            return output
+        }
+        set(value) {
+            this.storyArcs = value.joinToString(", ")
+            this.alternateSeries = null
+        }
+
+    var teamList: List<String>
+        get() = this.teams?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.teams = value.joinToString(", ")
+        }
+
+    var writerList: List<String>
+        get() = this.writers?.split(",")?.map { it.trim() } ?: emptyList()
+        set(value) {
+            this.writers = value.joinToString(", ")
         }
 
     fun toMetadata(): Metadata {
         return Metadata(
             issue = Metadata.Issue(
-                characters = this.characters.split(',').map {
+                characters = this.characterList.map {
                     Metadata.Issue.NamedResource(name = it.trim())
                 },
                 coverDate = this.coverDate,
@@ -197,11 +276,9 @@ data class ComicInfo(
                         roles = value,
                     )
                 },
-                genres = this.genres.split(',').map {
-                    it.trim()
-                },
-                language = this.language,
-                locations = this.locations.split(',').map {
+                genres = this.genreList,
+                language = this.language ?: "en",
+                locations = this.locationList.map {
                     Metadata.Issue.NamedResource(name = it)
                 },
                 number = this.number,
@@ -215,16 +292,18 @@ data class ComicInfo(
                 series = Metadata.Issue.Series(
                     format = this.format ?: "Comic",
                     // Missing Resources
-                    startYear = if (this.volume >= 1900) this.volume else None,
+                    startYear = if (this.volume != null && this.volume >= 1900) this.volume else null,
                     title = this.series ?: "Missing Series title",
-                    volume = if (this.volume <= 1900) this.volume else 1,
+                    volume = if (this.volume != null && this.volume <= 1900) this.volume else 1,
                 ),
                 // Missing Store Date
-                // Missing Story Arcs
-                summary = this.summary,
-                teams = this.teams.split(",").map {
-                    Metadata.Issue.NamedResource(name = it)
+                storyArcs = this.storyArcList.map {
+                    Metadata.Issue.StoryArc(title = it)
                 },
+                summary = this.summary,
+                teams = this.teams?.split(",")?.map {
+                    Metadata.Issue.NamedResource(name = it)
+                } ?: emptyList(),
                 title = this.title,
             ),
             notes = this.notes,

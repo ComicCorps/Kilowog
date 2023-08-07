@@ -29,8 +29,6 @@ data class MetronInfo(
     @XmlSerialName("Characters")
     @XmlChildrenName("Character")
     val characters: List<Resource> = emptyList(),
-    @XmlSerialName("CollectionTitle")
-    val collectionTitle: String? = null,
     @XmlSerialName("CoverDate")
     val coverDate: LocalDate,
     @XmlSerialName("Credits")
@@ -46,10 +44,10 @@ data class MetronInfo(
     @XmlSerialName("Locations")
     @XmlChildrenName("Location")
     val locations: List<Resource> = emptyList(),
-    @XmlSerialName("Name")
-    val number: String? = null,
     @XmlSerialName("Notes")
     val notes: String? = null,
+    @XmlSerialName("Number")
+    val number: String? = null,
     @XmlSerialName("PageCount")
     val pageCount: Int = 0,
     @XmlSerialName("Pages")
@@ -78,6 +76,8 @@ data class MetronInfo(
     @XmlSerialName("Teams")
     @XmlChildrenName("Team")
     val teams: List<Resource> = emptyList(),
+    @XmlSerialName("CollectionTitle")
+    val title: String? = null,
     @XmlSerialName("URL")
     val url: String? = null,
 ) {
@@ -288,7 +288,7 @@ data class MetronInfo(
                         ),
                     )
                 },
-                title = this.collectionTitle,
+                title = this.title,
             ),
             notes = this.notes,
             pages = this.pages.map {
