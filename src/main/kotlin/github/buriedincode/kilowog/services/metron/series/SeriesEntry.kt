@@ -1,12 +1,16 @@
 package github.buriedincode.kilowog.services.metron.series
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
 data class SeriesEntry(
-    @JsonAlias("id")
+    @JsonNames("id")
     val seriesId: Int,
-    @JsonAlias("series")
+    @JsonNames("series")
     var name: String,
-    @JsonAlias("modified")
+    @JsonNames("modified")
     var dateModified: String,
 )

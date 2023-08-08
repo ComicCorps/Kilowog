@@ -1,26 +1,22 @@
 package github.buriedincode.kilowog.services.comicvine
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
 data class Image(
-    @JsonAlias("icon_url")
-    val icon: String,
-    @JsonAlias("medium_url")
-    val medium: String,
-    @JsonAlias("original_url")
-    val original: String,
-    @JsonAlias("screen_url")
-    val screen: String,
-    @JsonAlias("screen_large_url")
-    val screenLarge: String,
-    @JsonAlias("small_url")
-    val small: String,
-    @JsonAlias("super_url")
-    val superLarge: String,
-    @JsonAlias("thumb_url")
+    val iconUrl: String,
+    val mediumUrl: String,
+    val originalUrl: String,
+    val screenUrl: String,
+    val screenLargeUrl: String,
+    val smallUrl: String,
+    val superUrl: String,
+    @JsonNames("thumb_url")
     val thumbnail: String,
-    @JsonAlias("tiny_url")
-    val tiny: String,
-    @JsonAlias("image_tags")
+    val tinyUrl: String,
+    @JsonNames("image_tags")
     val tags: String? = null,
 )

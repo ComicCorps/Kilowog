@@ -1,6 +1,5 @@
 package github.buriedincode.kilowog.services
 
-import com.fasterxml.jackson.core.type.TypeReference
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.services.comicvine.Response
 import github.buriedincode.kilowog.services.comicvine.issue.Issue
@@ -33,7 +32,7 @@ data class Comicvine(private val apiKey: String) {
         return URI.create(encodedUrl)
     }
 
-    private fun <T> sendRequest(uri: URI, type: TypeReference<T>): T? {
+    private fun sendRequest(uri: URI): String? {
         try {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -54,7 +53,7 @@ data class Comicvine(private val apiKey: String) {
             }
             logger.log(level, "GET: ${response.statusCode()} - $uri")
             if (response.statusCode() == 200) {
-                return Utils.JSON_MAPPER.readValue(response.body(), type)
+                return response.body()
             }
             logger.error(response.body())
         } catch (exc: IOException) {
@@ -73,10 +72,8 @@ data class Comicvine(private val apiKey: String) {
         if (!name.isNullOrBlank()) {
             params["filter"] = "name:$name"
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/publishers", params = params),
-            type = object : TypeReference<Response<ArrayList<PublisherEntry>>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/publishers", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listPublishers(name, page + 1))
@@ -85,10 +82,8 @@ data class Comicvine(private val apiKey: String) {
     }
 
     fun getPublisher(publisherId: Int): Publisher? {
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/publisher/${Resource.PUBLISHER.resourceId}-$publisherId"),
-            type = object : TypeReference<Response<Publisher>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/publisher/${Resource.PUBLISHER.resourceId}-$publisherId"))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Publisher>>(content) else null
         return response?.results
     }
 
@@ -100,22 +95,18 @@ data class Comicvine(private val apiKey: String) {
         if (!name.isNullOrBlank()) {
             params["filter"] = "name:$name"
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/volumes", params = params),
-            type = object : TypeReference<Response<ArrayList<VolumeEntry>>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/volumes", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listVolumes(publisherId, name, page + 1))
         }
-        return results.stream().filter { x: VolumeEntry -> x.publisher != null && x.publisher.id == publisherId }.toList()
+        return results.stream().filter { x: VolumeEntry -> (x.publisher != null) && (x.publisher.id == publisherId) }.toList()
     }
 
     fun getVolume(volumeId: Int): Volume? {
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/volume/${Resource.VOLUME.resourceId}-$volumeId"),
-            type = object : TypeReference<Response<Volume>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/volume/${Resource.VOLUME.resourceId}-$volumeId"))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Volume>>(content) else null
         return response?.results
     }
 
@@ -129,10 +120,8 @@ data class Comicvine(private val apiKey: String) {
         } else {
             params["filter"] = "volume:$volumeId"
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/issues", params = params),
-            type = object : TypeReference<Response<ArrayList<IssueEntry>>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/issues", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<IssueEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listIssues(volumeId, number, page + 1))
@@ -141,10 +130,8 @@ data class Comicvine(private val apiKey: String) {
     }
 
     fun getIssue(issueId: Int): Issue? {
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/issue/${Resource.ISSUE.resourceId}-$issueId"),
-            type = object : TypeReference<Response<Issue>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/issue/${Resource.ISSUE.resourceId}-$issueId"))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Issue>>(content) else null
         return response?.results
     }
 

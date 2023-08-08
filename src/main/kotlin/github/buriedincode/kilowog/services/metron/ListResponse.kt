@@ -1,5 +1,8 @@
 package github.buriedincode.kilowog.services.metron
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ListResponse<T>(
     val count: Int,
     val next: String? = null,

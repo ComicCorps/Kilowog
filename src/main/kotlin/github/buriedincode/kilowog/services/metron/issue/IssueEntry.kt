@@ -1,14 +1,17 @@
 package github.buriedincode.kilowog.services.metron.issue
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
 data class IssueEntry(
-    @JsonAlias("id")
+    @JsonNames("id")
     val issueId: Int,
-    @JsonAlias("issue")
+    @JsonNames("issue")
     val name: String,
-    @JsonAlias("cover_date")
     val coverDate: String,
-    @JsonAlias("modified")
+    @JsonNames("modified")
     val dateModified: String,
 )

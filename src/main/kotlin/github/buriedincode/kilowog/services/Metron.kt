@@ -1,7 +1,6 @@
 package github.buriedincode.kilowog.services
 
-import com.fasterxml.jackson.core.type.TypeReference
-import github.buriedincode.kilowog.Utils.JSON_MAPPER
+import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.VERSION
 import github.buriedincode.kilowog.services.metron.ListResponse
 import github.buriedincode.kilowog.services.metron.issue.Issue
@@ -38,7 +37,7 @@ data class Metron(private val username: String, private val password: String) {
         return URI.create(encodedUrl)
     }
 
-    private fun <T> sendRequest(uri: URI, type: TypeReference<T>): T? {
+    private fun sendRequest(uri: URI): String? {
         try {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -57,7 +56,7 @@ data class Metron(private val username: String, private val password: String) {
             }
             logger.log(level, "GET: ${response.statusCode()} - $uri")
             if (response.statusCode() == 200) {
-                return JSON_MAPPER.readValue(response.body(), type)
+                return response.body()
             }
             logger.error(response.body())
         } catch (exc: IOException) {
@@ -74,10 +73,8 @@ data class Metron(private val username: String, private val password: String) {
         if (!name.isNullOrBlank()) {
             params["name"] = name
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/publisher", params = params),
-            type = object : TypeReference<ListResponse<PublisherEntry>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/publisher", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
             results.addAll(this.listPublishers(name, page + 1))
@@ -86,10 +83,8 @@ data class Metron(private val username: String, private val password: String) {
     }
 
     fun getPublisher(publisherId: Int): Publisher? {
-        return sendRequest(
-            uri = encodeURI(endpoint = "/publisher/$publisherId"),
-            type = object : TypeReference<Publisher>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/publisher/$publisherId"))
+        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Publisher>(content) else null
     }
 
     @JvmOverloads
@@ -100,10 +95,8 @@ data class Metron(private val username: String, private val password: String) {
         if (!name.isNullOrBlank()) {
             params["name"] = name
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/series", params = params),
-            type = object : TypeReference<ListResponse<SeriesEntry>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/series", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
             results.addAll(listSeries(publisherId, name, page + 1))
@@ -112,10 +105,8 @@ data class Metron(private val username: String, private val password: String) {
     }
 
     fun getSeries(seriesId: Int): Series? {
-        return sendRequest(
-            uri = encodeURI(endpoint = "/series/$seriesId"),
-            type = object : TypeReference<Series>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/series/$seriesId"))
+        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Series>(content) else null
     }
 
     @JvmOverloads
@@ -126,10 +117,8 @@ data class Metron(private val username: String, private val password: String) {
         if (!number.isNullOrBlank()) {
             params["number"] = number
         }
-        val response = sendRequest(
-            uri = encodeURI(endpoint = "/issue", params = params),
-            type = object : TypeReference<ListResponse<IssueEntry>>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/issue", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
             results.addAll(listIssues(seriesId, number, page + 1))
@@ -138,10 +127,8 @@ data class Metron(private val username: String, private val password: String) {
     }
 
     fun getIssue(issueId: Int): Issue? {
-        return sendRequest(
-            uri = encodeURI(endpoint = "/issue/$issueId"),
-            type = object : TypeReference<Issue>() {},
-        )
+        val content = sendRequest(uri = encodeURI(endpoint = "/issue/$issueId"))
+        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Issue>(content) else null
     }
 
     companion object : Logging {

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNamingStrategy
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import org.apache.logging.log4j.kotlin.Logging
@@ -30,7 +33,14 @@ object Utils : Logging {
         xmlDeclMode = XmlDeclMode.Charset
         jacksonPolicy()
     }
-    val JSON_MAPPER: ObjectMapper = JsonMapper.builder()
+
+    @OptIn(ExperimentalSerializationApi::class)
+    val JSON_MAPPER: Json = Json {
+        prettyPrint = true
+        encodeDefaults = true
+        namingStrategy = JsonNamingStrategy.SnakeCase
+    }
+    val JACKSON_MAPPER: ObjectMapper = JsonMapper.builder()
         .addModule(JavaTimeModule())
         .addModule(
             KotlinModule.Builder()

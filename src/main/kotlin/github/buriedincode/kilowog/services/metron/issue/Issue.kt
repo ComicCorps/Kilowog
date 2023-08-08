@@ -1,19 +1,21 @@
 package github.buriedincode.kilowog.services.metron.issue
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
 data class Issue(
-    @JsonAlias("id")
+    @JsonNames("id")
     val issueId: Int,
     val publisher: Publisher,
     val series: Series,
     val number: String,
     val title: String? = null,
-    @JsonAlias("name")
+    @JsonNames("name")
     val names: List<String> = emptyList(),
-    @JsonAlias("cover_date")
     val coverDate: String,
-    @JsonAlias("store_date")
     val storeDate: String,
     val price: String,
     val rating: Rating,
@@ -21,109 +23,118 @@ data class Issue(
     val isbn: String? = null,
     val upc: String? = null,
     val page: Int,
-    @JsonAlias("desc")
+    @JsonNames("desc")
     val description: String? = null,
-    @JsonAlias("image")
+    @JsonNames("image")
     val imageUrl: String,
-    @JsonAlias("arcs")
+    @JsonNames("arcs")
     val storyArcs: List<StoryArc> = emptyList(),
     val credits: List<Credit> = emptyList(),
     val characters: List<Character> = emptyList(),
     val teams: List<Team> = emptyList(),
     val reprints: List<Reprint> = emptyList(),
     val variants: List<Variant> = emptyList(),
-    @JsonAlias("resource_url")
     val resourceUrl: String,
-    @JsonAlias("modified")
+    @JsonNames("modified")
     val dateModified: String,
 ) {
+    @Serializable
     data class Publisher(
-        @JsonAlias("id")
+        @JsonNames("id")
         val publisherId: Int,
         val name: String,
     )
 
+    @Serializable
     data class Series(
-        @JsonAlias("id")
+        @JsonNames("id")
         val seriesId: Int,
         val name: String,
-        @JsonAlias("sort_name")
         val sortName: String,
         val volume: Int,
-        @JsonAlias("series_type")
-        val type: SeriesType,
+        val seriesType: SeriesType,
         val genres: List<Genre> = emptyList(),
     ) {
+        @Serializable
         data class SeriesType(
-            @JsonAlias("id")
+            @JsonNames("id")
             val seriesTypeId: Int,
             val name: String,
         )
 
+        @Serializable
         data class Genre(
-            @JsonAlias("id")
+            @JsonNames("id")
             val genreId: Int,
             val name: String,
         )
     }
 
+    @Serializable
     data class Rating(
-        @JsonAlias("id")
+        @JsonNames("id")
         val ratingId: Int,
         val name: String,
     )
 
+    @Serializable
     data class StoryArc(
-        @JsonAlias("id")
+        @JsonNames("id")
         val storyArcId: Int,
         val name: String,
-        @JsonAlias("modified")
+        @JsonNames("modified")
         val dateModified: String,
     )
 
+    @Serializable
     data class Credit(
-        @JsonAlias("id")
+        @JsonNames("id")
         val creditId: Int,
         val creator: String,
-        @JsonAlias("role")
+        @JsonNames("role")
         val roles: List<Role> = emptyList(),
     ) {
+        @Serializable
         data class Role(
-            @JsonAlias("id")
+            @JsonNames("id")
             val roleId: Int,
             val name: String,
         )
     }
 
+    @Serializable
     data class Character(
-        @JsonAlias("id")
+        @JsonNames("id")
         val characterId: Int,
         val name: String,
-        @JsonAlias("modified")
+        @JsonNames("modified")
         val dateModified: String,
     )
 
+    @Serializable
     data class Team(
-        @JsonAlias("id")
+        @JsonNames("id")
         val teamId: Int,
         val name: String,
-        @JsonAlias("modified")
+        @JsonNames("modified")
         val dateModified: String,
     )
 
+    @Serializable
     data class Reprint(
-        @JsonAlias("id")
+        @JsonNames("id")
         val reprintId: Int,
         val name: String,
-        @JsonAlias("modified")
+        @JsonNames("modified")
         val dateModified: String,
     )
 
+    @Serializable
     data class Variant(
         val name: String,
         val sku: String? = null,
         val upc: String? = null,
-        @JsonAlias("image")
+        @JsonNames("image")
         val imageUrl: String,
     )
 }

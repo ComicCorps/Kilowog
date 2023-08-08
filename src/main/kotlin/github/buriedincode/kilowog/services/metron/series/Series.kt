@@ -1,52 +1,54 @@
 package github.buriedincode.kilowog.services.metron.series
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
 data class Series(
-    @JsonAlias("id")
+    @JsonNames("id")
     val seriesId: Int,
     val name: String,
-    @JsonAlias("sort_name")
     val sortName: String,
     val volume: Int,
-    @JsonAlias("series_type")
-    val type: SeriesType,
+    val seriesType: SeriesType,
     val publisher: Publisher,
-    @JsonAlias("year_began")
     val yearBegan: Int,
-    @JsonAlias("year_end")
     val yearEnd: Int,
-    @JsonAlias("desc")
+    @JsonNames("desc")
     val description: String? = null,
-    @JsonAlias("issue_count")
     val issueCount: Int,
     val genres: List<Genre> = emptyList(),
     val associated: List<Associated> = emptyList(),
-    @JsonAlias("resource_url")
     val resourceUrl: String,
-    @JsonAlias("modified")
+    @JsonNames("modified")
     val dateModified: String,
 ) {
+    @Serializable
     data class SeriesType(
-        @JsonAlias("id")
+        @JsonNames("id")
         val seriesTypeId: Int,
         val name: String,
     )
 
+    @Serializable
     data class Publisher(
-        @JsonAlias("id")
+        @JsonNames("id")
         val publisherId: Int,
         val name: String,
     )
 
+    @Serializable
     data class Genre(
-        @JsonAlias("id")
+        @JsonNames("id")
         val genreId: Int,
         val name: String,
     )
 
+    @Serializable
     data class Associated(
-        @JsonAlias("id")
+        @JsonNames("id")
         val associatedId: Int,
         val name: String,
     )

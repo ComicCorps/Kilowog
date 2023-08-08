@@ -22,6 +22,7 @@ repositories {
 dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.5.1")
     runtimeOnly("org.xerial", "sqlite-jdbc", "3.42.0.0")
 
     // Hoplite
@@ -33,13 +34,6 @@ dependencies {
     val xmlutilVersion = "0.86.1"
     implementation("io.github.pdvrieze.xmlutil", "core-jvm", xmlutilVersion)
     implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilVersion)
-
-    // Jackson
-    val jacksonVersion = "2.15.2"
-    implementation("com.fasterxml.jackson.core", "jackson-databind", jacksonVersion)
-    implementation("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml", jacksonVersion)
-    implementation("com.fasterxml.jackson.datatype", "jackson-datatype-jsr310", jacksonVersion)
-    implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", jacksonVersion)
 
     // Log4j2
     implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.2.0")
