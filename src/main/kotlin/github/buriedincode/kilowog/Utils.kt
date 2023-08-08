@@ -1,10 +1,5 @@
 package github.buriedincode.kilowog
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -40,19 +35,6 @@ object Utils : Logging {
         encodeDefaults = true
         namingStrategy = JsonNamingStrategy.SnakeCase
     }
-    val JACKSON_MAPPER: ObjectMapper = JsonMapper.builder()
-        .addModule(JavaTimeModule())
-        .addModule(
-            KotlinModule.Builder()
-                .withReflectionCacheSize(512)
-                .configure(KotlinFeature.NullToEmptyCollection, true)
-                .configure(KotlinFeature.NullToEmptyMap, true)
-                .configure(KotlinFeature.NullIsSameAsDefault, true)
-                .configure(KotlinFeature.SingletonSupport, false)
-                .configure(KotlinFeature.StrictNullChecks, true)
-                .build(),
-        )
-        .build()
 
     init {
         if (!Files.exists(CACHE_ROOT)) {
