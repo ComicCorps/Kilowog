@@ -283,8 +283,8 @@ object App : Logging {
         }
     }
 
-    fun readCollection(settings: Settings): Map<Path, Metadata?> {
-        val files = Utils.listFiles(settings.collectionFolder, "cbz")
+    fun readCollection(directory: Path): Map<Path, Metadata?> {
+        val files = Utils.listFiles(directory, "cbz")
         return files.associateWith {
             readMetadata(archiveFile = it.toFile())
                 ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
@@ -292,8 +292,8 @@ object App : Logging {
         }
     }
 
-    fun convertCbrToCbz(settings: Settings) {
-        Utils.listFiles(settings.collectionFolder, "cbr").forEach { srcFile ->
+    fun convertCbrToCbz(directory: Path) {
+        Utils.listFiles(directory, "cbr").forEach { srcFile ->
             val tempDir = createTempDirectory(srcFile.pathString)
             Utils.recursiveDeleteOnExit(path = tempDir)
 
@@ -318,11 +318,11 @@ object App : Logging {
         // testComicInfo()
         // testMetronInfo()
         // testMetadata()
-        convertCbrToCbz(settings = settings)
-        val collection = readCollection(settings = settings)
+        convertCbrToCbz(directory = settings.collectionFolder)
+        val collection = readCollection(directory = settings.collectionFolder)
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
             val newLocation = Paths.get(
-                settings.collectionFolder.toString(),
+                settings.collectionFolder.pathString,
                 metadata.issue.publisher.getFilename(),
                 metadata.issue.series.getFilename(),
                 "${metadata.issue.getFilename()}.${file.extension}",
@@ -337,7 +337,9 @@ object App : Logging {
     }
 }
 
-fun main(vararg args: String) {
+fun main(
+    @Suppress("UNUSED_PARAMETER") vararg args: String,
+) {
     println("Kilowog v${Utils.VERSION}")
     println("Kotlin v${KotlinVersion.CURRENT}")
     println("Java v${System.getProperty("java.version")}")
