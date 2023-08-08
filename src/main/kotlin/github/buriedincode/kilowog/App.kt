@@ -1,6 +1,7 @@
 package github.buriedincode.kilowog
 
 import com.github.junrar.Archive
+import com.github.junrar.Junrar
 import com.github.junrar.rarfile.FileHeader
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.comicinfo.enums.Manga
@@ -18,13 +19,23 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.kotlin.Logging
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+import kotlin.io.path.Path
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.extension
+import kotlin.io.path.moveTo
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 
 object App : Logging {
     private fun testComicInfo() {
@@ -218,25 +229,17 @@ object App : Logging {
         val tempFile = createTempFile(prefix = "${archiveFile.name}__${infoFile}__", suffix = ".xml").toFile()
         tempFile.deleteOnExit()
 
-        when (archiveFile.extension) {
-            "cbz" -> {
-                val zip = ZipFile(archiveFile)
-                val entry = zip.getEntry("$infoFile.xml") ?: return null
-                zip.getInputStream(entry).use { input ->
-                    tempFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+        if (archiveFile.extension == "cbz") {
+            val zip = ZipFile(archiveFile)
+            val entry = zip.getEntry("$infoFile.xml") ?: return null
+            zip.getInputStream(entry).use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
                 }
-                zip.close()
             }
-            ".cbr" -> {
-                val archive = Archive(archiveFile)
-                val fileHeader = findInfoFile(archive = archive, filename = "$infoFile.xml") ?: return null
-                val fos = FileOutputStream(tempFile)
-                archive.extractFile(fileHeader, fos)
-                fos.close()
-            }
-            else -> return null
+            zip.close()
+        } else {
+            return null
         }
         return tempFile.readText()
     }
@@ -281,7 +284,7 @@ object App : Logging {
     }
 
     fun readCollection(settings: Settings): Map<Path, Metadata?> {
-        val files = Utils.listFiles(settings.collectionFolder, "cbz", "cbr")
+        val files = Utils.listFiles(settings.collectionFolder, "cbz")
         return files.associateWith {
             readMetadata(archiveFile = it.toFile())
                 ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
@@ -289,12 +292,34 @@ object App : Logging {
         }
     }
 
+    fun convertCbrToCbz(settings: Settings) {
+        Utils.listFiles(settings.collectionFolder, "cbr").forEach { srcFile ->
+            val tempDir = createTempDirectory(srcFile.pathString)
+            Utils.recursiveDeleteOnExit(path = tempDir)
+
+            Junrar.extract(srcFile.toFile(), tempDir.toFile())
+
+            val destFile = Path(srcFile.parent.pathString, srcFile.nameWithoutExtension + ".cbz")
+            ZipOutputStream(BufferedOutputStream(FileOutputStream(destFile.toFile()))).use { out ->
+                Utils.listFiles(tempDir).map { it.pathString }.forEach { file ->
+                    FileInputStream(file).use {
+                        BufferedInputStream(it).use {
+                            val entry = ZipEntry(file.substring(file.lastIndexOf("/")))
+                            out.putNextEntry(entry)
+                            it.copyTo(out, 1024)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun start(settings: Settings) {
         // testComicInfo()
         // testMetronInfo()
         // testMetadata()
+        convertCbrToCbz(settings = settings)
         val collection = readCollection(settings = settings)
-        println(collection.keys)
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
             val newLocation = Paths.get(
                 settings.collectionFolder.toString(),
@@ -302,8 +327,13 @@ object App : Logging {
                 metadata.issue.series.getFilename(),
                 "${metadata.issue.getFilename()}.${file.extension}",
             )
-            println("$file => $newLocation")
+            if (file != newLocation) {
+                println("$file => $newLocation")
+                newLocation.parent.toFile().mkdirs()
+                file.moveTo(newLocation, overwrite = false)
+            }
         }
+        Utils.removeBlankDirectories(directory = settings.collectionFolder.toFile())
     }
 }
 

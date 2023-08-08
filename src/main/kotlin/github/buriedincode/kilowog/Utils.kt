@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import org.apache.logging.log4j.kotlin.Logging
+import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitOption
 import java.nio.file.FileVisitResult
@@ -107,6 +108,18 @@ object Utils : Logging {
                 }
             },
         )
+    }
+
+    fun removeBlankDirectories(directory: File) {
+        directory.listFiles()?.forEach {
+            if (it.isDirectory) {
+                removeBlankDirectories(directory = it)
+            }
+        }
+        if ((directory.listFiles()?.size ?: 0) == 0) {
+            logger.info("Cleaning up blank folder: ${directory.name}")
+            directory.deleteRecursively()
+        }
     }
 
     fun sanitize(value: String): String {
