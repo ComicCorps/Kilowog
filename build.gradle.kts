@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.9.0"
     kotlin("plugin.serialization") version "1.9.0"
     application
-    id("org.jlleitschuh.gradle.ktlint") version "11.5.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("com.github.ben-manes.versions") version "0.47.0"
 }
 
@@ -29,10 +29,10 @@ dependencies {
     implementation("com.sksamuel.hoplite", "hoplite-core", hopliteVersion)
     implementation("com.sksamuel.hoplite", "hoplite-yaml", hopliteVersion)
 
-    // XmlUtils
-    val xmlutilsVersion = "0.86.1"
-    implementation("io.github.pdvrieze.xmlutil", "core-jvm", xmlutilsVersion)
-    implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilsVersion)
+    // XmlUtil
+    val xmlutilVersion = "0.86.1"
+    implementation("io.github.pdvrieze.xmlutil", "core-jvm", xmlutilVersion)
+    implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilVersion)
 
     // Jackson
     val jacksonVersion = "2.15.2"
