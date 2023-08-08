@@ -1,5 +1,6 @@
 package github.buriedincode.kilowog.services
 
+import com.sksamuel.hoplite.Secret
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.VERSION
 import github.buriedincode.kilowog.services.metron.ListResponse
@@ -23,6 +24,7 @@ import java.util.Base64
 import java.util.stream.Collectors
 
 data class Metron(private val username: String, private val password: String) {
+    constructor(username: String, password: Secret) : this(username = username, password = password.value)
     private fun encodeURI(endpoint: String, params: Map<String, String> = HashMap()): URI {
         var encodedUrl: String = BASE_API + endpoint
         if (params.isNotEmpty()) {

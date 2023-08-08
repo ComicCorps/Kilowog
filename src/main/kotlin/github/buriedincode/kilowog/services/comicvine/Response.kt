@@ -14,7 +14,6 @@ data class Response<T>(
     val pageResults: Int,
     @JsonNames("number_of_total_results")
     val totalResults: Int,
-    @JsonNames("status_code")
     val statusCode: Int,
     val results: T,
     val version: String,

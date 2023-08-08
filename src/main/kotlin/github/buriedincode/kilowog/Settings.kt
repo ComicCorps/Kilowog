@@ -8,10 +8,6 @@ import org.apache.logging.log4j.kotlin.Logging
 import java.nio.file.Path
 import java.nio.file.Paths
 
-data class Comicvine(val apiKey: Secret?)
-data class LeagueOfComicGeeks(val accessToken: Secret?, val clientId: String?, val clientSecret: Secret?)
-data class Marvel(val publicKey: String?, val privateKey: Secret?)
-data class Metron(val username: String?, val password: Secret?)
 data class Settings(
     val collectionFolder: Path,
     val comicvine: Comicvine,
@@ -19,6 +15,10 @@ data class Settings(
     val marvel: Marvel,
     val metron: Metron,
 ) {
+    data class Comicvine(val apiKey: Secret?)
+    data class LeagueOfComicGeeks(val accessToken: Secret?, val clientId: String?, val clientSecret: Secret?)
+    data class Marvel(val publicKey: String?, val privateKey: Secret?)
+    data class Metron(val username: String?, val password: Secret?)
     companion object : Logging {
         fun load(): Settings = ConfigLoaderBuilder.default()
             .addPathSource(

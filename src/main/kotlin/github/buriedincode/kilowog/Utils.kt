@@ -1,5 +1,6 @@
 package github.buriedincode.kilowog
 
+import com.sksamuel.hoplite.Secret
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -69,6 +70,8 @@ object Utils : Logging {
             it.replaceFirstChar(Char::uppercaseChar)
         }
     }
+
+    fun Secret?.isNullOrBlank(): Boolean = this?.value.isNullOrBlank()
 
     internal fun listFiles(path: Path, vararg fileExtensions: String): List<Path> {
         require(Files.isDirectory(path)) { "Path must be a directory" }

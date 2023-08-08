@@ -3,6 +3,7 @@ package github.buriedincode.kilowog
 import com.github.junrar.Archive
 import com.github.junrar.Junrar
 import com.github.junrar.rarfile.FileHeader
+import github.buriedincode.kilowog.Utils.isNullOrBlank
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.comicinfo.enums.Manga
 import github.buriedincode.kilowog.comicinfo.enums.YesNo
@@ -13,6 +14,8 @@ import github.buriedincode.kilowog.metroninfo.enums.Format
 import github.buriedincode.kilowog.metroninfo.enums.Genre
 import github.buriedincode.kilowog.metroninfo.enums.InformationSource
 import github.buriedincode.kilowog.metroninfo.enums.Role
+import github.buriedincode.kilowog.services.Comicvine
+import github.buriedincode.kilowog.services.Metron
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
@@ -315,11 +318,29 @@ object App : Logging {
     }
 
     fun start(settings: Settings) {
+        val comicvine: Comicvine? = if (settings.comicvine.apiKey.isNullOrBlank()) null else Comicvine(apiKey = settings.comicvine.apiKey!!)
+        val metron: Metron? = if (settings.metron.username.isNullOrBlank() || settings.metron.password.isNullOrBlank()) {
+            null
+        } else {
+            Metron(
+                username = settings.metron.username,
+                password = settings.metron.password!!,
+            )
+        }
         // testComicInfo()
         // testMetronInfo()
         // testMetadata()
         convertCbrToCbz(directory = settings.collectionFolder)
         val collection = readCollection(directory = settings.collectionFolder)
+        collection.filterValues { it != null }.mapValues { it.value as Metadata }.firstNotNullOf { (file, metadata) ->
+            logger.debug(metadata)
+            if (metadata.issue.publisher.resources.isNotEmpty()) {
+                logger.info("Publisher Id exists")
+            } else {
+                val publishers = comicvine?.listPublishers(name = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title)
+                println(publishers)
+            }
+        }
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
             val newLocation = Paths.get(
                 settings.collectionFolder.pathString,
@@ -328,7 +349,7 @@ object App : Logging {
                 "${metadata.issue.getFilename()}.${file.extension}",
             )
             if (file != newLocation) {
-                println("$file => $newLocation")
+                logger.info("Renamed $file to $newLocation")
                 newLocation.parent.toFile().mkdirs()
                 file.moveTo(newLocation, overwrite = false)
             }

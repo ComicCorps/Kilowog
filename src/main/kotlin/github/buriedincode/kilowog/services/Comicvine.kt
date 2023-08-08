@@ -1,5 +1,6 @@
 package github.buriedincode.kilowog.services
 
+import com.sksamuel.hoplite.Secret
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.services.comicvine.Response
 import github.buriedincode.kilowog.services.comicvine.issue.Issue
@@ -21,6 +22,7 @@ import java.time.Duration
 import java.util.stream.Collectors
 
 data class Comicvine(private val apiKey: String) {
+    constructor(apiKey: Secret) : this(apiKey = apiKey.value)
     private fun encodeURI(endpoint: String, params: MutableMap<String, String> = HashMap()): URI {
         params["api_key"] = apiKey
         params["format"] = "json"
