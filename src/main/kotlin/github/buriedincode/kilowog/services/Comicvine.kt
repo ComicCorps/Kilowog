@@ -35,6 +35,8 @@ data class Comicvine(private val apiKey: String) {
     }
 
     private fun sendRequest(uri: URI): String? {
+        val regex = "api_key=(.+?)&".toRegex()
+        val adjustedUri = regex.replaceFirst(uri.toString(), "api_key=***&")
         try {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -53,15 +55,15 @@ data class Comicvine(private val apiKey: String) {
                 response.statusCode() in (400 until 500) -> Level.WARN
                 else -> Level.ERROR
             }
-            logger.log(level, "GET: ${response.statusCode()} - $uri")
+            logger.log(level, "GET: ${response.statusCode()} - $adjustedUri")
             if (response.statusCode() == 200) {
                 return response.body()
             }
             logger.error(response.body())
         } catch (exc: IOException) {
-            logger.error("Unable to make request to: ${uri.path}", exc)
+            logger.error("Unable to make request to: $adjustedUri", exc)
         } catch (exc: InterruptedException) {
-            logger.error("Unable to make request to: ${uri.path}", exc)
+            logger.error("Unable to make request to: $adjustedUri", exc)
         }
         return null
     }

@@ -111,7 +111,7 @@ object Utils : Logging {
                 removeBlankDirectories(directory = it)
             }
         }
-        if ((directory.listFiles()?.size ?: 0) == 0) {
+        if (!directory.name.startsWith(".") && (directory.listFiles()?.size ?: 0) == 0) {
             logger.info("Cleaning up blank folder: ${directory.name}")
             directory.deleteRecursively()
         }

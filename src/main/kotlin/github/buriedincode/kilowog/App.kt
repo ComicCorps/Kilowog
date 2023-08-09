@@ -7,6 +7,7 @@ import github.buriedincode.kilowog.Utils.isNullOrBlank
 import github.buriedincode.kilowog.comicinfo.ComicInfo
 import github.buriedincode.kilowog.comicinfo.enums.Manga
 import github.buriedincode.kilowog.comicinfo.enums.YesNo
+import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.metadata.Metadata
 import github.buriedincode.kilowog.metadata.enums.Source
 import github.buriedincode.kilowog.metroninfo.MetronInfo
@@ -69,9 +70,9 @@ object App : Logging {
             teamList = listOf("Planeswalkers")
             writerList = listOf("Jed MacKay")
         }
-        logger.warn(comicInfo)
+        logger.warn("ComicInfo before encoding: $comicInfo")
         val comicInfoStr = Utils.XML_MAPPER.encodeToString(comicInfo)
-        logger.warn(comicInfoStr)
+        logger.warn("ComicInfo after encoding: $comicInfoStr")
     }
     private fun testMetronInfo() {
         val metronInfo = MetronInfo(
@@ -125,9 +126,9 @@ object App : Logging {
                 MetronInfo.Resource(id = -1, value = "Planeswalkers"),
             ),
         )
-        logger.warn(metronInfo)
+        logger.warn("MetronInfo before encoding: $metronInfo")
         val metronInfoStr = Utils.XML_MAPPER.encodeToString(metronInfo)
-        logger.warn(metronInfoStr)
+        logger.warn("MetronInfo after encoding: $metronInfoStr")
     }
     private fun testMetadata() {
         val metadata = Metadata(
@@ -214,9 +215,9 @@ object App : Logging {
             ),
             notes = "Scraped metadata from Comixology [CMXDB929703], [ASINB08ZKFQBRJ]",
         )
-        logger.warn(metadata)
+        logger.warn("Metadata before encoding: $metadata")
         val metadataStr = Utils.XML_MAPPER.encodeToString(metadata)
-        logger.warn(metadataStr)
+        logger.warn("Metadata after encoding: $metadataStr")
     }
 
     private fun findInfoFile(archive: Archive, filename: String): FileHeader? {
@@ -253,9 +254,8 @@ object App : Logging {
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
-        } catch (exc: MissingFieldException) {
-            // logger.fatal(content)
-            logger.fatal(exc)
+        } catch (mfe: MissingFieldException) {
+            logger.error("Metadata config is invalid", mfe)
             null
         }
     }
@@ -266,9 +266,8 @@ object App : Logging {
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
-        } catch (exc: MissingFieldException) {
-            // logger.fatal(content)
-            logger.fatal(exc)
+        } catch (mfe: MissingFieldException) {
+            logger.error("MetronInfo config is invalid", mfe)
             null
         }
     }
@@ -279,9 +278,8 @@ object App : Logging {
             ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
-        } catch (exc: MissingFieldException) {
-            // logger.fatal(content)
-            logger.fatal(exc)
+        } catch (mfe: MissingFieldException) {
+            logger.error("ComicInfo config is invalid", mfe)
             null
         }
     }
@@ -297,7 +295,8 @@ object App : Logging {
 
     fun convertCbrToCbz(directory: Path) {
         Utils.listFiles(directory, "cbr").forEach { srcFile ->
-            val tempDir = createTempDirectory(srcFile.pathString)
+            logger.info("Converting $srcFile to CBZ format")
+            val tempDir = createTempDirectory(srcFile.nameWithoutExtension)
             Utils.recursiveDeleteOnExit(path = tempDir)
 
             Junrar.extract(srcFile.toFile(), tempDir.toFile())
@@ -314,7 +313,119 @@ object App : Logging {
                     }
                 }
             }
+            tempDir.toFile().deleteRecursively()
+            srcFile.toFile().delete()
         }
+    }
+
+    private fun lookupPublisher(metadata: Metadata.Issue.Publisher, metron: Metron?, comicvine: Comicvine?) {
+        metron?.let {
+            val publishers = it.listPublishers(name = metadata.imprint ?: metadata.title)
+            val publisher = if (publishers.size > 1) {
+                logger.warn("Multiple results found.")
+                val index = Console.displayMenu(
+                    title = "Publisher Select",
+                    options = publishers.map { "${it.publisherId} - ${it.name}" },
+                    exit = "None of the Above",
+                )
+                if (index == 0) {
+                    return@let null
+                }
+                publishers[index - 1]
+            } else if (publishers.size == 1) {
+                publishers[0]
+            } else {
+                return@let null
+            }
+            val resources = metadata.resources.toMutableList()
+            resources.add(0, Metadata.Issue.Resource(source = Source.METRON, value = publisher.publisherId))
+            metadata.resources = resources.toList()
+        } ?: comicvine?.let {
+            val publishers = it.listPublishers(name = metadata.imprint ?: metadata.title)
+            val publisher = if (publishers.size > 1) {
+                logger.warn("Multiple results found.")
+                val index = Console.displayMenu(
+                    title = "Publisher Select",
+                    options = publishers.map { "${it.publisherId} - ${it.name}" },
+                    exit = "None of the Above",
+                )
+                if (index == 0) {
+                    return@let null
+                }
+                publishers[index - 1]
+            } else if (publishers.size == 1) {
+                publishers[0]
+            } else {
+                return@let null
+            }
+            val resources = metadata.resources.toMutableList()
+            resources.add(0, Metadata.Issue.Resource(source = Source.COMICVINE, value = publisher.publisherId))
+            metadata.resources = resources.toList()
+        }
+    }
+
+    private fun loadPublisherFromMetron(metadata: Metadata.Issue.Publisher, metron: Metron?) {
+        TODO()
+    }
+
+    private fun loadPublisherFromComicvine(metadata: Metadata.Issue.Publisher, comicvine: Comicvine?) {
+        TODO()
+    }
+
+    private fun lookupSeries(metadata: Metadata.Issue, metron: Metron?, comicvine: Comicvine?) {
+        metron?.let {
+            val publisherId = metadata.publisher.resources.firstOrNull { it.source == Source.METRON }?.value ?: return@let null
+            val seriesList = it.listSeries(publisherId = publisherId, name = metadata.series.title)
+            val series = if (seriesList.size > 1) {
+                logger.warn("Multiple results found.")
+                val index = Console.displayMenu(
+                    title = "Series Select",
+                    options = seriesList.map { "${it.seriesId} - ${it.name}" },
+                    exit = "None of the Above",
+                )
+                if (index == 0) {
+                    return@let null
+                }
+                seriesList[index - 1]
+            } else if (seriesList.size == 1) {
+                seriesList[0]
+            } else {
+                return@let null
+            }
+            val resources = metadata.series.resources.toMutableList()
+            resources.add(0, Metadata.Issue.Resource(source = Source.METRON, value = series.seriesId))
+            metadata.series.resources = resources.toList()
+        } ?: comicvine?.let {
+            val publisherId = metadata.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value ?: return@let null
+            val volumes = it.listVolumes(publisherId = publisherId, name = metadata.series.title)
+            val volume = if (volumes.size > 1) {
+                logger.warn("Multiple results found.")
+                val index = Console.displayMenu(
+                    title = "Volume Select",
+                    options = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
+                    exit = "None of the Above",
+                )
+                if (index == 0) {
+                    return@let null
+                }
+                volumes[index - 1]
+            } else if (volumes.size == 1) {
+                volumes[0]
+            } else {
+                return@let null
+            }
+            val resources = metadata.series.resources.toMutableList()
+            resources.add(0, Metadata.Issue.Resource(source = Source.COMICVINE, value = volume.volumeId))
+            metadata.series.resources = resources.toList()
+        }
+    }
+
+    private fun loadSeriesFromMetron(metadata: Metadata.Issue.Series, metron: Metron?) {
+        TODO()
+    }
+
+    private fun loadSeriesFromComicvine(metadata: Metadata.Issue.Series, comicvine: Comicvine?) {
+        TODO()
     }
 
     fun start(settings: Settings) {
@@ -334,12 +445,29 @@ object App : Logging {
         val collection = readCollection(directory = settings.collectionFolder)
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.firstNotNullOf { (file, metadata) ->
             logger.debug(metadata)
-            if (metadata.issue.publisher.resources.isNotEmpty()) {
-                logger.info("Publisher Id exists")
-            } else {
-                val publishers = comicvine?.listPublishers(name = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title)
-                println(publishers)
+            var metronId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
+            var comicvineId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            if (metronId == null && comicvineId == null) {
+                lookupPublisher(metadata = metadata.issue.publisher, metron, comicvine)
             }
+            metadata.issue.publisher.resources.firstOrNull { it.source == Source.METRON }?.value?.let {
+                loadPublisherFromMetron(metadata = metadata.issue.publisher, metron = metron)
+            } ?: metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value?.let {
+                loadPublisherFromComicvine(metadata = metadata.issue.publisher, comicvine = comicvine)
+            } ?: return@firstNotNullOf
+
+            metronId = metadata.issue.series.resources.firstOrNull { it.source == Source.METRON }?.value
+            comicvineId = metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            if (metronId == null && comicvineId == null) {
+                lookupSeries(metadata = metadata.issue, metron, comicvine)
+            }
+            metadata.issue.series.resources.firstOrNull { it.source == Source.METRON }?.value?.let {
+                loadSeriesFromMetron(metadata = metadata.issue.series, metron = metron)
+            } ?: metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value?.let {
+                loadSeriesFromComicvine(metadata = metadata.issue.series, comicvine = comicvine)
+            } ?: return@firstNotNullOf
+
+            logger.info(metadata)
         }
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
             val newLocation = Paths.get(

@@ -2,7 +2,6 @@ package github.buriedincode.kilowog.services
 
 import com.sksamuel.hoplite.Secret
 import github.buriedincode.kilowog.Utils
-import github.buriedincode.kilowog.Utils.VERSION
 import github.buriedincode.kilowog.services.metron.ListResponse
 import github.buriedincode.kilowog.services.metron.issue.Issue
 import github.buriedincode.kilowog.services.metron.issue.IssueEntry
@@ -44,7 +43,7 @@ data class Metron(private val username: String, private val password: String) {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
                 .setHeader("Accept", "application/json")
-                .setHeader("User-Agent", "Kilowog-v$VERSION/Kotlin-v${KotlinVersion.CURRENT}")
+                .setHeader("User-Agent", "Kilowog-v${Utils.VERSION}/Kotlin-v${KotlinVersion.CURRENT}")
                 .setHeader("Authorization", getBasicAuthenticationHeader(username, password))
                 .GET()
                 .build()

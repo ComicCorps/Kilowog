@@ -58,3 +58,10 @@ application {
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("0.50.0")
 }
+
+tasks {
+    val run by existing(JavaExec::class)
+    run.configure {
+        standardInput = System.`in`
+    }
+}

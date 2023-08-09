@@ -11,6 +11,8 @@ data class SeriesEntry(
     val seriesId: Int,
     @JsonNames("series")
     var name: String,
+    var yearBegan: Int,
+    var issueCount: Int,
     @JsonNames("modified")
     var dateModified: String,
 )

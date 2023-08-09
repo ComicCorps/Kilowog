@@ -4,7 +4,6 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.Secret
 import com.sksamuel.hoplite.addPathSource
 import com.sksamuel.hoplite.addResourceSource
-import org.apache.logging.log4j.kotlin.Logging
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -19,7 +18,7 @@ data class Settings(
     data class LeagueOfComicGeeks(val accessToken: Secret?, val clientId: String?, val clientSecret: Secret?)
     data class Marvel(val publicKey: String?, val privateKey: Secret?)
     data class Metron(val username: String?, val password: Secret?)
-    companion object : Logging {
+    companion object {
         fun load(): Settings = ConfigLoaderBuilder.default()
             .addPathSource(
                 Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.yaml"),
