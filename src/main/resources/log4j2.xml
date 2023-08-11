@@ -5,7 +5,7 @@
 
     <Appenders>
         <Console name="Console">
-            <PatternLayout disableAnsi="false" pattern="[%highlight{%date{yyyy-MM-dd HH:mm:ss}}{${colours}}] [%highlight{%-5level}{${colours}}] {%highlight{%logger{2}}{${colours}}} | %msg%n%throwable" />
+            <PatternLayout disableAnsi="false" pattern="[%highlight{%date{yyyy-MM-dd HH:mm:ss}}{${colours}}] [%highlight{%-5level}{${colours}}] {%highlight{%logger{2}}{${colours}}} | %msg%n" />
         </Console>
         <RollingFile name="RollingFile" fileName="logs/kilowog.log" filePattern="logs/kilowog-%i.log">
             <PatternLayout pattern="[%date{yyyy-MM-dd HH:mm:ss}] [%-5level] {%logger{2}} | %msg%n%throwable"/>
@@ -19,7 +19,7 @@
     <Loggers>
         <Logger name="com.github.junrar.Junrar" level="WARN"/>
         <Root level="INFO">
-            <AppenderRef ref="Console"/>
+            <!--<AppenderRef ref="Console"/>-->
             <AppenderRef ref="RollingFile"/>
         </Root>
     </Loggers>

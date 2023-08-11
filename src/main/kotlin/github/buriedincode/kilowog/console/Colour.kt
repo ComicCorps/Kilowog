@@ -1,4 +1,5 @@
 package github.buriedincode.kilowog.console
+
 internal enum class Colour(val ansiCode: String) {
     RESET(ansiCode = "\u001B[0m"),
     BLACK(ansiCode = "\u001B[30m"),

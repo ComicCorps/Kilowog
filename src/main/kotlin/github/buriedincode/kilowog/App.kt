@@ -23,6 +23,7 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.kotlin.Logging
+import org.apache.logging.log4j.kotlin.logger
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -70,9 +71,9 @@ object App : Logging {
             teamList = listOf("Planeswalkers")
             writerList = listOf("Jed MacKay")
         }
-        logger.warn("ComicInfo before encoding: $comicInfo")
+        logger.info("ComicInfo before encoding: $comicInfo")
         val comicInfoStr = Utils.XML_MAPPER.encodeToString(comicInfo)
-        logger.warn("ComicInfo after encoding: $comicInfoStr")
+        logger.info("ComicInfo after encoding: $comicInfoStr")
     }
     private fun testMetronInfo() {
         val metronInfo = MetronInfo(
@@ -126,9 +127,9 @@ object App : Logging {
                 MetronInfo.Resource(id = -1, value = "Planeswalkers"),
             ),
         )
-        logger.warn("MetronInfo before encoding: $metronInfo")
+        logger.info("MetronInfo before encoding: $metronInfo")
         val metronInfoStr = Utils.XML_MAPPER.encodeToString(metronInfo)
-        logger.warn("MetronInfo after encoding: $metronInfoStr")
+        logger.info("MetronInfo after encoding: $metronInfoStr")
     }
     private fun testMetadata() {
         val metadata = Metadata(
@@ -215,9 +216,9 @@ object App : Logging {
             ),
             notes = "Scraped metadata from Comixology [CMXDB929703], [ASINB08ZKFQBRJ]",
         )
-        logger.warn("Metadata before encoding: $metadata")
+        logger.info("Metadata before encoding: $metadata")
         val metadataStr = Utils.XML_MAPPER.encodeToString(metadata)
-        logger.warn("Metadata after encoding: $metadataStr")
+        logger.info("Metadata after encoding: $metadataStr")
     }
 
     private fun findInfoFile(archive: Archive, filename: String): FileHeader? {
@@ -255,7 +256,8 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("Metadata config is invalid", mfe)
+            Console.error("Metadata config is invalid: ${mfe.message}")
+            logger.error("Metadata config is invalid: ${mfe.message}")
             null
         }
     }
@@ -267,7 +269,8 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("MetronInfo config is invalid", mfe)
+            Console.error("MetronInfo config is invalid: ${mfe.message}")
+            logger.error("MetronInfo config is invalid: ${mfe.message}")
             null
         }
     }
@@ -279,7 +282,8 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("ComicInfo config is invalid", mfe)
+            Console.error("ComicInfo config is invalid: ${mfe.message}")
+            logger.error("ComicInfo config is invalid: ${mfe.message}")
             null
         }
     }
@@ -295,7 +299,7 @@ object App : Logging {
 
     fun convertCbrToCbz(directory: Path) {
         Utils.listFiles(directory, "cbr").forEach { srcFile ->
-            logger.info("Converting $srcFile to CBZ format")
+            Console.info("Converting $srcFile to CBZ format")
             val tempDir = createTempDirectory(srcFile.nameWithoutExtension)
             Utils.recursiveDeleteOnExit(path = tempDir)
 
@@ -322,11 +326,10 @@ object App : Logging {
         metron?.let {
             val publishers = it.listPublishers(name = metadata.imprint ?: metadata.title)
             val publisher = if (publishers.size > 1) {
-                logger.warn("Multiple results found.")
-                val index = Console.displayMenu(
-                    title = "Publisher Select",
-                    options = publishers.map { "${it.publisherId} - ${it.name}" },
-                    exit = "None of the Above",
+                val index = Console.menu(
+                    title = "Metron publisher select",
+                    choices = publishers.map { "${it.publisherId} - ${it.name}" },
+                    default = "None of the Above",
                 )
                 if (index == 0) {
                     return@let null
@@ -343,11 +346,10 @@ object App : Logging {
         } ?: comicvine?.let {
             val publishers = it.listPublishers(name = metadata.imprint ?: metadata.title)
             val publisher = if (publishers.size > 1) {
-                logger.warn("Multiple results found.")
-                val index = Console.displayMenu(
-                    title = "Publisher Select",
-                    options = publishers.map { "${it.publisherId} - ${it.name}" },
-                    exit = "None of the Above",
+                val index = Console.menu(
+                    title = "Comicvine publisher select",
+                    choices = publishers.map { "${it.publisherId} - ${it.name}" },
+                    default = "None of the Above",
                 )
                 if (index == 0) {
                     return@let null
@@ -377,11 +379,10 @@ object App : Logging {
             val publisherId = metadata.publisher.resources.firstOrNull { it.source == Source.METRON }?.value ?: return@let null
             val seriesList = it.listSeries(publisherId = publisherId, name = metadata.series.title)
             val series = if (seriesList.size > 1) {
-                logger.warn("Multiple results found.")
-                val index = Console.displayMenu(
-                    title = "Series Select",
-                    options = seriesList.map { "${it.seriesId} - ${it.name}" },
-                    exit = "None of the Above",
+                val index = Console.menu(
+                    title = "Metron series select",
+                    choices = seriesList.map { "${it.seriesId} - ${it.name}" },
+                    default = "None of the Above",
                 )
                 if (index == 0) {
                     return@let null
@@ -399,11 +400,10 @@ object App : Logging {
             val publisherId = metadata.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value ?: return@let null
             val volumes = it.listVolumes(publisherId = publisherId, name = metadata.series.title)
             val volume = if (volumes.size > 1) {
-                logger.warn("Multiple results found.")
-                val index = Console.displayMenu(
-                    title = "Volume Select",
-                    options = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
-                    exit = "None of the Above",
+                val index = Console.menu(
+                    title = "Comicvine volume select",
+                    choices = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
+                    default = "None of the Above",
                 )
                 if (index == 0) {
                     return@let null
@@ -444,7 +444,6 @@ object App : Logging {
         convertCbrToCbz(directory = settings.collectionFolder)
         val collection = readCollection(directory = settings.collectionFolder)
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.firstNotNullOf { (file, metadata) ->
-            logger.debug(metadata)
             var metronId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
             var comicvineId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
             if (metronId == null && comicvineId == null) {
@@ -467,7 +466,7 @@ object App : Logging {
                 loadSeriesFromComicvine(metadata = metadata.issue.series, comicvine = comicvine)
             } ?: return@firstNotNullOf
 
-            logger.info(metadata)
+            println(metadata)
         }
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.forEach { (file, metadata) ->
             val newLocation = Paths.get(
@@ -477,7 +476,7 @@ object App : Logging {
                 "${metadata.issue.getFilename()}.${file.extension}",
             )
             if (file != newLocation) {
-                logger.info("Renamed $file to $newLocation")
+                Console.info("Renamed $file to $newLocation")
                 newLocation.parent.toFile().mkdirs()
                 file.moveTo(newLocation, overwrite = false)
             }
