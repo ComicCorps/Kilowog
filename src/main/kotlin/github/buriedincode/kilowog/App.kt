@@ -256,7 +256,6 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (mfe: MissingFieldException) {
-            Console.error("Metadata config is invalid: ${mfe.message}")
             logger.error("Metadata config is invalid: ${mfe.message}")
             null
         }
@@ -269,7 +268,6 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (mfe: MissingFieldException) {
-            Console.error("MetronInfo config is invalid: ${mfe.message}")
             logger.error("MetronInfo config is invalid: ${mfe.message}")
             null
         }
@@ -282,7 +280,6 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (mfe: MissingFieldException) {
-            Console.error("ComicInfo config is invalid: ${mfe.message}")
             logger.error("ComicInfo config is invalid: ${mfe.message}")
             null
         }
@@ -299,7 +296,8 @@ object App : Logging {
 
     fun convertCbrToCbz(directory: Path) {
         Utils.listFiles(directory, "cbr").forEach { srcFile ->
-            Console.info("Converting $srcFile to CBZ format")
+            Console.print("Converting $srcFile to CBZ format")
+            logger.info("Converting $srcFile to CBZ format")
             val tempDir = createTempDirectory(srcFile.nameWithoutExtension)
             Utils.recursiveDeleteOnExit(path = tempDir)
 
@@ -336,6 +334,7 @@ object App : Logging {
                 }
                 publishers[index - 1]
             } else if (publishers.size == 1) {
+                Console.print("Found matching publisher: ${publishers[0].publisherId} - ${publishers[0].name}")
                 publishers[0]
             } else {
                 return@let null
@@ -356,6 +355,7 @@ object App : Logging {
                 }
                 publishers[index - 1]
             } else if (publishers.size == 1) {
+                Console.print("Found matching publisher: ${publishers[0].publisherId} - ${publishers[0].name}")
                 publishers[0]
             } else {
                 return@let null
@@ -367,11 +367,19 @@ object App : Logging {
     }
 
     private fun loadPublisherFromMetron(metadata: Metadata.Issue.Publisher, metron: Metron?) {
-        TODO()
+        metron?.let {
+            val publisherId = metadata.resources.firstOrNull { it.source == Source.METRON }?.value ?: return
+            val publisher = it.getPublisher(publisherId = publisherId) ?: return
+            metadata.title = publisher.name
+        }
     }
 
     private fun loadPublisherFromComicvine(metadata: Metadata.Issue.Publisher, comicvine: Comicvine?) {
-        TODO()
+        comicvine?.let {
+            val publisherId = metadata.resources.firstOrNull { it.source == Source.COMICVINE }?.value ?: return
+            val publisher = it.getPublisher(publisherId = publisherId) ?: return
+            metadata.title = publisher.name
+        }
     }
 
     private fun lookupSeries(metadata: Metadata.Issue, metron: Metron?, comicvine: Comicvine?) {
@@ -389,6 +397,7 @@ object App : Logging {
                 }
                 seriesList[index - 1]
             } else if (seriesList.size == 1) {
+                Console.print("Found matching series: ${seriesList[0].seriesId} - ${seriesList[0].name}")
                 seriesList[0]
             } else {
                 return@let null
@@ -410,6 +419,7 @@ object App : Logging {
                 }
                 volumes[index - 1]
             } else if (volumes.size == 1) {
+                Console.print("Found matching volume: ${volumes[0].volumeId} - ${volumes[0].name} (${volumes[0].startYear})")
                 volumes[0]
             } else {
                 return@let null
@@ -421,14 +431,29 @@ object App : Logging {
     }
 
     private fun loadSeriesFromMetron(metadata: Metadata.Issue.Series, metron: Metron?) {
-        TODO()
+        metron?.let {
+            val seriesId = metadata.resources.firstOrNull { it.source == Source.METRON }?.value ?: return
+            val series = it.getSeries(seriesId = seriesId) ?: return
+            metadata.format = series.seriesType.name
+            metadata.startYear = series.yearBegan
+            metadata.title = series.name
+            metadata.volume = series.volume
+        }
     }
 
     private fun loadSeriesFromComicvine(metadata: Metadata.Issue.Series, comicvine: Comicvine?) {
-        TODO()
+        comicvine?.let {
+            val seriesId = metadata.resources.firstOrNull { it.source == Source.COMICVINE }?.value ?: return
+            val volume = it.getVolume(volumeId = seriesId) ?: return
+            metadata.startYear = volume.startYear
+            metadata.title = volume.name
+        }
     }
 
     fun start(settings: Settings) {
+        testComicInfo()
+        testMetronInfo()
+        testMetadata()
         val comicvine: Comicvine? = if (settings.comicvine.apiKey.isNullOrBlank()) null else Comicvine(apiKey = settings.comicvine.apiKey!!)
         val metron: Metron? = if (settings.metron.username.isNullOrBlank() || settings.metron.password.isNullOrBlank()) {
             null
@@ -438,9 +463,6 @@ object App : Logging {
                 password = settings.metron.password!!,
             )
         }
-        // testComicInfo()
-        // testMetronInfo()
-        // testMetadata()
         convertCbrToCbz(directory = settings.collectionFolder)
         val collection = readCollection(directory = settings.collectionFolder)
         collection.filterValues { it != null }.mapValues { it.value as Metadata }.firstNotNullOf { (file, metadata) ->
@@ -476,7 +498,8 @@ object App : Logging {
                 "${metadata.issue.getFilename()}.${file.extension}",
             )
             if (file != newLocation) {
-                Console.info("Renamed $file to $newLocation")
+                Console.print("Renamed $file to $newLocation")
+                logger.info("Renamed $file to $newLocation")
                 newLocation.parent.toFile().mkdirs()
                 file.moveTo(newLocation, overwrite = false)
             }

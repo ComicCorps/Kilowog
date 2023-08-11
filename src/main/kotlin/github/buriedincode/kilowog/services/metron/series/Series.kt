@@ -7,36 +7,38 @@ import kotlinx.serialization.json.JsonNames
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class Series(
-    @JsonNames("id")
-    val seriesId: Int,
-    val name: String,
-    val sortName: String,
-    val volume: Int,
-    val seriesType: SeriesType,
-    val publisher: Publisher,
-    val yearBegan: Int,
-    val yearEnd: Int,
-    @JsonNames("desc")
-    val description: String? = null,
-    val issueCount: Int,
-    val genres: List<Genre> = emptyList(),
     val associated: List<Associated> = emptyList(),
-    val resourceUrl: String,
+    @JsonNames("cv_id")
+    val comicvineId: Int? = null,
     @JsonNames("modified")
     val dateModified: String,
+    @JsonNames("desc")
+    val description: String? = null,
+    val genres: List<Genre> = emptyList(),
+    val issueCount: Int,
+    val name: String,
+    val publisher: Publisher,
+    val resourceUrl: String,
+    @JsonNames("id")
+    val seriesId: Int,
+    val seriesType: SeriesType,
+    val sortName: String,
+    val volume: Int,
+    val yearBegan: Int,
+    val yearEnd: Int? = null,
 ) {
     @Serializable
     data class SeriesType(
+        val name: String,
         @JsonNames("id")
         val seriesTypeId: Int,
-        val name: String,
     )
 
     @Serializable
     data class Publisher(
+        val name: String,
         @JsonNames("id")
         val publisherId: Int,
-        val name: String,
     )
 
     @Serializable

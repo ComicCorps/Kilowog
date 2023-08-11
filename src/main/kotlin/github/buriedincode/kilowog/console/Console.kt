@@ -43,14 +43,11 @@ internal object Console : Logging {
     ): Boolean = prompt(prompt = "$prompt (Y/N)", promptColour = promptColour)?.equals("y", ignoreCase = true) ?: false
 
     internal fun prompt(prompt: String, promptColour: Colour = PROMPT): String? {
-        print("${promptColour}$prompt >> ${Colour.RESET}")
+        System.out.print("${promptColour}$prompt >> ${Colour.RESET}")
         return readlnOrNull()?.trim()
     }
 
-    internal fun error(value: Any?) = colourOutput(value = value?.toString(), colour = Colour.RED)
-    internal fun warn(value: Any?) = colourOutput(value = value?.toString(), colour = Colour.YELLOW)
-    internal fun info(value: Any?) = colourOutput(value = value?.toString(), colour = Colour.WHITE)
-    internal fun debug(value: Any?) = colourOutput(value = value?.toString(), colour = Colour.BLUE)
+    internal fun print(value: Any?) = colourOutput(value = value?.toString(), colour = STANDARD)
 
     private fun colourPair(
         value: Pair<String, String?>,
