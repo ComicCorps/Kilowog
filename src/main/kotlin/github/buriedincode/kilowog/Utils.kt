@@ -7,16 +7,13 @@ import kotlinx.serialization.json.JsonNamingStrategy
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import org.apache.logging.log4j.kotlin.Logging
-import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitOption
-import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
-import java.util.stream.Collectors
+import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
 
 object Utils : Logging {
     internal const val VERSION = "0.0.0"
@@ -73,48 +70,20 @@ object Utils : Logging {
 
     fun Secret?.isNullOrBlank(): Boolean = this?.value.isNullOrBlank()
 
-    internal fun listFiles(path: Path, vararg fileExtensions: String): List<Path> {
+    internal fun listFiles(path: Path, fileExtension: String? = null): List<Path> {
         require(Files.isDirectory(path)) { "Path must be a directory" }
         var results: List<Path> = emptyList()
         try {
-            Files.walk(path, FileVisitOption.FOLLOW_LINKS).use { walk ->
-                results = walk.filter { Files.isRegularFile(it) }
-                    .filter { it.toFile().extension in fileExtensions }
-                    .collect(Collectors.toList())
+            Files.walk(path, FileVisitOption.FOLLOW_LINKS).use {
+                results = it.filter { it.isRegularFile() }.toList()
+                if (!fileExtension.isNullOrBlank()) {
+                    results = results.filter { it.extension == fileExtension }.toList()
+                }
             }
         } catch (ioe: IOException) {
             logger.warn("Unable to walk folders", ioe)
         }
         return results
-    }
-
-    @Throws(IOException::class)
-    fun recursiveDeleteOnExit(path: Path) {
-        Files.walkFileTree(
-            path,
-            object : SimpleFileVisitor<Path>() {
-                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    file.toFile().deleteOnExit()
-                    return FileVisitResult.CONTINUE
-                }
-                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    dir.toFile().deleteOnExit()
-                    return FileVisitResult.CONTINUE
-                }
-            },
-        )
-    }
-
-    fun removeBlankDirectories(directory: File) {
-        directory.listFiles()?.forEach {
-            if (it.isDirectory) {
-                removeBlankDirectories(directory = it)
-            }
-        }
-        if (!directory.name.startsWith(".") && (directory.listFiles()?.size ?: 0) == 0) {
-            logger.info("Cleaning up blank folder: ${directory.name}")
-            directory.deleteRecursively()
-        }
     }
 
     fun sanitize(value: String): String {

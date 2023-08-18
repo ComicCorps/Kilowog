@@ -1,21 +1,24 @@
-package github.buriedincode.kilowog.metroninfo
+package github.buriedincode.kilowog.models
 
+import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
-import github.buriedincode.kilowog.metadata.Metadata
-import github.buriedincode.kilowog.metroninfo.enums.AgeRating
-import github.buriedincode.kilowog.metroninfo.enums.Format
-import github.buriedincode.kilowog.metroninfo.enums.Genre
-import github.buriedincode.kilowog.metroninfo.enums.InformationSource
-import github.buriedincode.kilowog.metroninfo.enums.PageType
-import github.buriedincode.kilowog.metroninfo.enums.Role
+import github.buriedincode.kilowog.models.metroninfo.enums.AgeRating
+import github.buriedincode.kilowog.models.metroninfo.enums.Format
+import github.buriedincode.kilowog.models.metroninfo.enums.Genre
+import github.buriedincode.kilowog.models.metroninfo.enums.InformationSource
+import github.buriedincode.kilowog.models.metroninfo.enums.PageType
+import github.buriedincode.kilowog.models.metroninfo.enums.Role
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
-import github.buriedincode.kilowog.metadata.enums.Source as MetadataSource
+import java.nio.file.Path
+import kotlin.io.path.writeText
+import github.buriedincode.kilowog.models.metadata.enums.Source as MetadataSource
 
 @Serializable
 data class MetronInfo(
@@ -96,7 +99,7 @@ data class MetronInfo(
     @Serializable
     data class Resource(
         @XmlElement(false)
-        val id: Int,
+        val id: Int? = null,
         @XmlValue
         val value: String,
     )
@@ -106,7 +109,7 @@ data class MetronInfo(
         @XmlSerialName("Format")
         val format: Format? = null,
         @XmlElement(false)
-        val id: Int,
+        val id: Int? = null,
         @XmlElement(false)
         val lang: String = "en",
         @XmlSerialName("Name")
@@ -128,7 +131,7 @@ data class MetronInfo(
     @Serializable
     data class GenreResource(
         @XmlElement(false)
-        val id: Int,
+        val id: Int? = null,
         @XmlValue
         val value: Genre,
     )
@@ -136,7 +139,7 @@ data class MetronInfo(
     @Serializable
     data class Arc(
         @XmlElement(false)
-        val id: Int,
+        val id: Int? = null,
         @XmlSerialName("Name")
         val name: String,
         @XmlSerialName("Number")
@@ -163,7 +166,7 @@ data class MetronInfo(
     @Serializable
     data class RoleResource(
         @XmlElement(false)
-        val id: Int,
+        val id: Int? = null,
         @XmlValue
         val value: Role,
     )
@@ -171,28 +174,20 @@ data class MetronInfo(
     @Serializable
     data class Page(
         @XmlElement(false)
-        @XmlSerialName("Bookmark")
         val bookmark: String? = null,
         @XmlElement(false)
-        @XmlSerialName("DoublePage")
         val doublePage: Boolean = false,
         @XmlElement(false)
-        @XmlSerialName("Image")
         val image: Int,
         @XmlElement(false)
-        @XmlSerialName("ImageHeight")
         val imageHeight: Int? = null,
         @XmlElement(false)
-        @XmlSerialName("ImageSize")
         val imageSize: Long? = null,
         @XmlElement(false)
-        @XmlSerialName("ImageWidth")
         val imageWidth: Int? = null,
         @XmlElement(false)
-        @XmlSerialName("Key")
         val key: String? = null,
         @XmlElement(false)
-        @XmlSerialName("Type")
         val type: PageType = PageType.STORY,
     )
 
@@ -205,7 +200,7 @@ data class MetronInfo(
                         name = resource.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = resource.id)
+                                Metadata.Issue.Resource(source = it, value = resource.id ?: return@let null)
                             },
                         ),
                     )
@@ -217,7 +212,7 @@ data class MetronInfo(
                             name = credit.creator.value,
                             resources = listOfNotNull(
                                 source?.let {
-                                    Metadata.Issue.Resource(source = it, value = credit.creator.id)
+                                    Metadata.Issue.Resource(source = it, value = credit.creator.id ?: return@let null)
                                 },
                             ),
                         ),
@@ -233,7 +228,7 @@ data class MetronInfo(
                         name = location.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = location.id)
+                                Metadata.Issue.Resource(source = it, value = location.id ?: return@let null)
                             },
                         ),
                     )
@@ -243,7 +238,7 @@ data class MetronInfo(
                 publisher = Metadata.Issue.Publisher(
                     resources = listOfNotNull(
                         source?.let {
-                            Metadata.Issue.Resource(source = it, value = publisher.id)
+                            Metadata.Issue.Resource(source = it, value = publisher.id ?: return@let null)
                         },
                     ),
                     title = this.publisher.value,
@@ -259,7 +254,7 @@ data class MetronInfo(
                     format = this.series.format?.titleCase() ?: "Comic",
                     resources = listOfNotNull(
                         source?.let {
-                            Metadata.Issue.Resource(source = it, value = series.id)
+                            Metadata.Issue.Resource(source = it, value = series.id ?: return@let null)
                         },
                     ),
                     title = this.series.name,
@@ -271,7 +266,7 @@ data class MetronInfo(
                         number = arc.number,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = arc.id)
+                                Metadata.Issue.Resource(source = it, value = arc.id ?: return@let null)
                             },
                         ),
                         title = arc.name,
@@ -283,7 +278,7 @@ data class MetronInfo(
                         name = team.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = team.id)
+                                Metadata.Issue.Resource(source = it, value = team.id ?: return@let null)
                             },
                         ),
                     )
@@ -303,5 +298,10 @@ data class MetronInfo(
                 )
             },
         )
+    }
+
+    fun toFile(file: Path) {
+        val stringXml = Utils.XML_MAPPER.encodeToString(this)
+        file.writeText(stringXml, charset = Charsets.UTF_8)
     }
 }

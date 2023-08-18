@@ -1,16 +1,19 @@
-package github.buriedincode.kilowog.comicinfo
+package github.buriedincode.kilowog.models
 
+import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.titleCase
-import github.buriedincode.kilowog.comicinfo.enums.AgeRating
-import github.buriedincode.kilowog.comicinfo.enums.Manga
-import github.buriedincode.kilowog.comicinfo.enums.PageType
-import github.buriedincode.kilowog.comicinfo.enums.YesNo
-import github.buriedincode.kilowog.metadata.Metadata
+import github.buriedincode.kilowog.models.comicinfo.enums.AgeRating
+import github.buriedincode.kilowog.models.comicinfo.enums.Manga
+import github.buriedincode.kilowog.models.comicinfo.enums.PageType
+import github.buriedincode.kilowog.models.comicinfo.enums.YesNo
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
+import java.nio.file.Path
+import kotlin.io.path.writeText
 
 @Serializable
 data class ComicInfo(
@@ -103,28 +106,20 @@ data class ComicInfo(
     @Serializable
     data class Page(
         @XmlElement(false)
-        @XmlSerialName("Bookmark")
         val bookmark: String? = null,
         @XmlElement(false)
-        @XmlSerialName("DoublePage")
         val doublePage: Boolean = false,
         @XmlElement(false)
-        @XmlSerialName("Image")
         val image: Int,
         @XmlElement(false)
-        @XmlSerialName("ImageHeight")
         val imageHeight: Int? = null,
         @XmlElement(false)
-        @XmlSerialName("ImageSize")
         val imageSize: Long? = null,
         @XmlElement(false)
-        @XmlSerialName("ImageWidth")
         val imageWidth: Int? = null,
         @XmlElement(false)
-        @XmlSerialName("Key")
         val key: String? = null,
         @XmlElement(false)
-        @XmlSerialName("Type")
         val type: PageType = PageType.STORY,
     )
 
@@ -319,5 +314,10 @@ data class ComicInfo(
                 )
             },
         )
+    }
+
+    fun toFile(file: Path) {
+        val stringXml = Utils.XML_MAPPER.encodeToString(this)
+        file.writeText(stringXml, charset = Charsets.UTF_8)
     }
 }

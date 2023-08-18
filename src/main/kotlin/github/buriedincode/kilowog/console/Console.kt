@@ -33,8 +33,21 @@ internal object Console : Logging {
         choices.indices.forEach {
             colourPair((it + 1).toString().padStart(padCount) to choices[it], colours = choiceColours)
         }
-        if (default != null) colourPair("0" to default, colours = choiceColours)
-        return prompt(prompt = prompt, promptColour = promptColour)?.toIntOrNull() ?: 0
+        if (!default.isNullOrBlank()) colourPair("0" to default, colours = choiceColours)
+        val selected = prompt(prompt = prompt, promptColour = promptColour)?.toIntOrNull() ?: 0
+        if ((default.isNullOrBlank() && selected == 0) || selected >= choices.size) {
+            logger.error("Invalid Option: `$selected`")
+            return menu(
+                title = title,
+                titleColour = titleColour,
+                choices = choices,
+                choiceColours = choiceColours,
+                default = default,
+                prompt = prompt,
+                promptColour = promptColour,
+            )
+        }
+        return selected
     }
 
     internal fun confirm(

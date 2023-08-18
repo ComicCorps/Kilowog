@@ -1,4 +1,4 @@
-package github.buriedincode.kilowog.comicinfo.enums
+package github.buriedincode.kilowog.models.comicinfo.enums
 
 import github.buriedincode.kilowog.Utils.titleCase
 import kotlinx.serialization.SerialName

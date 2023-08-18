@@ -1,12 +1,15 @@
 package github.buriedincode.kilowog.services.comicvine.issue
 
+import github.buriedincode.kilowog.LocalDateTimeSerializer
 import github.buriedincode.kilowog.services.comicvine.AssociatedImage
 import github.buriedincode.kilowog.services.comicvine.CreatorEntry
 import github.buriedincode.kilowog.services.comicvine.GenericEntry
 import github.buriedincode.kilowog.services.comicvine.Image
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -15,9 +18,11 @@ data class Issue(
     val associatedImages: List<AssociatedImage> = emptyList(),
     @JsonNames("api_detail_url")
     val apiUrl: String,
-    val coverDate: String? = null,
-    val dateAdded: String,
-    val dateLastUpdated: String,
+    val coverDate: LocalDate? = null,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    val dateAdded: LocalDateTime,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    val dateLastUpdated: LocalDateTime,
     val description: String? = null,
     val hasStaffReview: Boolean,
     @JsonNames("id")
@@ -28,7 +33,7 @@ data class Issue(
     val number: String? = null,
     @JsonNames("site_detail_url")
     val siteUrl: String,
-    val storeDate: String? = null,
+    val storeDate: LocalDate? = null,
     @JsonNames("deck")
     val summary: String? = null,
     val volume: GenericEntry,
@@ -40,13 +45,13 @@ data class Issue(
     val creators: List<CreatorEntry> = emptyList(),
     @JsonNames("character_died_in")
     val deaths: List<GenericEntry> = emptyList(),
-    val firstAppearanceCharacters: List<GenericEntry> = emptyList(),
-    val firstAppearanceConcepts: List<GenericEntry> = emptyList(),
-    val firstAppearanceLocations: List<GenericEntry> = emptyList(),
-    val firstAppearanceObjects: List<GenericEntry> = emptyList(),
+    val firstAppearanceCharacters: List<GenericEntry>? = emptyList(),
+    val firstAppearanceConcepts: List<GenericEntry>? = emptyList(),
+    val firstAppearanceLocations: List<GenericEntry>? = emptyList(),
+    val firstAppearanceObjects: List<GenericEntry>? = emptyList(),
     @JsonNames("first_appearance_storyarcs")
-    val firstAppearanceStoryArcs: List<GenericEntry> = emptyList(),
-    val firstAppearanceTeams: List<GenericEntry> = emptyList(),
+    val firstAppearanceStoryArcs: List<GenericEntry>? = emptyList(),
+    val firstAppearanceTeams: List<GenericEntry>? = emptyList(),
     @JsonNames("location_credits")
     val locations: List<GenericEntry> = emptyList(),
     @JsonNames("object_credits")

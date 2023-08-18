@@ -1,4 +1,4 @@
-package github.buriedincode.kilowog.metroninfo.enums
+package github.buriedincode.kilowog.models.metroninfo.enums
 
 import github.buriedincode.kilowog.Utils.titleCase
 import kotlinx.serialization.SerialName

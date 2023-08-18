@@ -1,8 +1,10 @@
 package github.buriedincode.kilowog.services.metron.series
 
+import github.buriedincode.kilowog.OffsetDateTimeSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -11,7 +13,8 @@ data class Series(
     @JsonNames("cv_id")
     val comicvineId: Int? = null,
     @JsonNames("modified")
-    val dateModified: String,
+    @Serializable(with = OffsetDateTimeSerializer::class)
+    val dateModified: LocalDateTime,
     @JsonNames("desc")
     val description: String? = null,
     val genres: List<Genre> = emptyList(),

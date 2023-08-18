@@ -12,9 +12,9 @@ data class Response<T>(
     val offset: Int,
     @JsonNames("number_of_page_results")
     val pageResults: Int,
+    val results: T,
+    val statusCode: Int,
     @JsonNames("number_of_total_results")
     val totalResults: Int,
-    val statusCode: Int,
-    val results: T,
     val version: String,
 )

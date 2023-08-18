@@ -1,9 +1,9 @@
-package github.buriedincode.kilowog.comicinfo.enums
+package github.buriedincode.kilowog.models.comicinfo.enums
 
 import github.buriedincode.kilowog.Utils.titleCase
 import kotlinx.serialization.SerialName
 
-enum class Manga {
+enum class YesNo {
     @SerialName("Yes")
     YES,
 
@@ -12,9 +12,6 @@ enum class Manga {
 
     @SerialName("Unknown")
     UNKNOWN,
-
-    @SerialName("YesAndRightToLeft")
-    YES_AND_RIGHT_TO_LEFT,
 
     ;
 
