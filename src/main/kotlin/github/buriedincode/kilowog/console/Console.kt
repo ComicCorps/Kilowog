@@ -35,7 +35,7 @@ internal object Console : Logging {
         }
         if (!default.isNullOrBlank()) colourPair("0" to default, colours = choiceColours)
         val selected = prompt(prompt = prompt, promptColour = promptColour)?.toIntOrNull() ?: 0
-        if ((default.isNullOrBlank() && selected == 0) || selected >= choices.size) {
+        if ((default.isNullOrBlank() && selected == 0) || selected > choices.size) {
             logger.error("Invalid Option: `$selected`")
             return menu(
                 title = title,
@@ -57,7 +57,11 @@ internal object Console : Logging {
 
     internal fun prompt(prompt: String, promptColour: Colour = PROMPT): String? {
         System.out.print("${promptColour}$prompt >> ${Colour.RESET}")
-        return readlnOrNull()?.trim()
+        val output = readlnOrNull()?.trim()
+        if (output.isNullOrBlank()) {
+            return null
+        }
+        return output
     }
 
     internal fun print(value: Any?) = colourOutput(value = value?.toString(), colour = STANDARD)

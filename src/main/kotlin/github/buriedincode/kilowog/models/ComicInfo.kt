@@ -1,6 +1,7 @@
 package github.buriedincode.kilowog.models
 
 import github.buriedincode.kilowog.Utils
+import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
 import github.buriedincode.kilowog.models.comicinfo.enums.AgeRating
 import github.buriedincode.kilowog.models.comicinfo.enums.Manga
@@ -285,7 +286,8 @@ data class ComicInfo(
                 ),
                 // Missing Resources
                 series = Metadata.Issue.Series(
-                    format = this.format ?: "Comic",
+                    format = this.format?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.enums.Format>()
+                        ?: github.buriedincode.kilowog.models.metadata.enums.Format.COMIC,
                     // Missing Resources
                     startYear = if (this.volume != null && this.volume >= 1900) this.volume else null,
                     title = this.series ?: "Missing Series title",

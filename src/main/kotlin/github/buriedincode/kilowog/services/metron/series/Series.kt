@@ -55,6 +55,7 @@ data class Series(
     data class Associated(
         @JsonNames("id")
         val associatedId: Int,
+        @JsonNames("series")
         val name: String,
     )
 }

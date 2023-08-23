@@ -30,8 +30,8 @@ data class Issue(
     val names: List<String> = emptyList(),
     val number: String,
     @JsonNames("page")
-    val pageCount: Int,
-    val price: String,
+    val pageCount: Int? = 0,
+    val price: String? = null,
     val publisher: Resource,
     val rating: Resource,
     val reprints: List<Reprint> = emptyList(),

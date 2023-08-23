@@ -69,18 +69,18 @@ data class Comicvine(private val apiKey: String) {
     }
 
     @JvmOverloads
-    fun listPublishers(name: String? = null, page: Int = 1): List<PublisherEntry> {
+    fun listPublishers(title: String? = null, page: Int = 1): List<PublisherEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
-        if (!name.isNullOrBlank()) {
-            params["filter"] = "name:$name"
+        if (!title.isNullOrBlank()) {
+            params["filter"] = "name:$title"
         }
         val content = sendRequest(uri = encodeURI(endpoint = "/publishers", params = params))
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
-            results.addAll(listPublishers(name, page + 1))
+            results.addAll(listPublishers(title, page + 1))
         }
         return results
     }
@@ -92,20 +92,24 @@ data class Comicvine(private val apiKey: String) {
     }
 
     @JvmOverloads
-    fun listVolumes(publisherId: Int, name: String? = null, page: Int = 1): List<VolumeEntry> {
+    fun listVolumes(publisherId: Int, title: String? = null, startYear: Int? = null, page: Int = 1): List<VolumeEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
-        if (!name.isNullOrBlank()) {
-            params["filter"] = "name:$name"
+        if (!title.isNullOrBlank()) {
+            params["filter"] = "name:$title"
         }
         val content = sendRequest(uri = encodeURI(endpoint = "/volumes", params = params))
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content) else null
-        val results = response?.results ?: mutableListOf()
+        var results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
-            results.addAll(listVolumes(publisherId, name, page + 1))
+            results.addAll(listVolumes(publisherId, title, page + 1))
         }
-        return results.stream().filter { x: VolumeEntry -> (x.publisher != null) && (x.publisher.id == publisherId) }.toList()
+        results = results.stream().filter { (it.publisher != null) && (it.publisher.id == publisherId) }.toList()
+        if (startYear != null) {
+            results = results.stream().filter { it.startYear == startYear }.toList()
+        }
+        return results
     }
 
     fun getVolume(volumeId: Int): Volume? {

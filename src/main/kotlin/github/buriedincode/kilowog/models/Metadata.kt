@@ -3,6 +3,7 @@ package github.buriedincode.kilowog.models
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
+import github.buriedincode.kilowog.models.metadata.enums.Format
 import github.buriedincode.kilowog.models.metadata.enums.Source
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -90,17 +91,34 @@ data class Metadata(
         }
 
         @Serializable
-        data class Resource(
+        class Resource(
             @XmlElement(false)
             var source: Source,
             @XmlValue
             var value: Int,
-        )
+        ) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is Resource) return false
+
+                if (source != other.source) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return source.hashCode()
+            }
+
+            override fun toString(): String {
+                return "Resource(source=$source, value=$value)"
+            }
+        }
 
         @Serializable
         data class Series(
             @XmlSerialName("Format")
-            var format: String = "Comic",
+            var format: Format = Format.COMIC,
             @XmlSerialName("Resources")
             @XmlChildrenName("Resource")
             var resources: List<Resource> = emptyList(),
@@ -190,7 +208,7 @@ data class Metadata(
 
     fun toComicInfo(): ComicInfo {
         return ComicInfo(
-            format = this.issue.series.format,
+            format = this.issue.series.format.titleCase(),
             imprint = this.issue.publisher.imprint,
             language = this.issue.language,
             notes = this.notes,
@@ -312,7 +330,7 @@ data class Metadata(
                 value = this.issue.publisher.imprint ?: this.issue.publisher.title,
             ),
             series = MetronInfo.Series(
-                format = this.issue.series.format.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.Format>(),
+                format = this.issue.series.format.titleCase().asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.Format>(),
                 id = this.issue.series.resources.firstOrNull { it.source == source }?.value,
                 lang = this.issue.language,
                 name = this.issue.series.title,

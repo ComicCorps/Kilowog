@@ -8,12 +8,11 @@ import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
-import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.extension
-import kotlin.io.path.isRegularFile
+import kotlin.io.walkTopDown
 
 object Utils : Logging {
     internal const val VERSION = "0.0.0"
@@ -59,7 +58,7 @@ object Utils : Logging {
     }
 
     inline fun <reified T : Enum<T>> String.asEnumOrNull(): T? {
-        return enumValues<T>().firstOrNull { it.name.equals(this, ignoreCase = true) }
+        return enumValues<T>().firstOrNull { it.name.replace("_", " ").equals(this.replace("_", " "), ignoreCase = true) }
     }
 
     inline fun <reified T : Enum<T>> T.titleCase(): String {
@@ -72,16 +71,11 @@ object Utils : Logging {
 
     internal fun listFiles(path: Path, fileExtension: String? = null): List<Path> {
         require(Files.isDirectory(path)) { "Path must be a directory" }
-        var results: List<Path> = emptyList()
-        try {
-            Files.walk(path, FileVisitOption.FOLLOW_LINKS).use {
-                results = it.filter { it.isRegularFile() }.toList()
-                if (!fileExtension.isNullOrBlank()) {
-                    results = results.filter { it.extension == fileExtension }.toList()
-                }
-            }
-        } catch (ioe: IOException) {
-            logger.warn("Unable to walk folders", ioe)
+        var results = path.toFile().walkTopDown().onEnter {
+            !it.name.startsWith(".")
+        }.filter { it.isFile }.map { it.toPath() }.toList()
+        if (!fileExtension.isNullOrBlank()) {
+            results = results.filter { it.extension == fileExtension }
         }
         return results
     }

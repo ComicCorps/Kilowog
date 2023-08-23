@@ -68,17 +68,17 @@ data class Metron(private val username: String, private val password: String) {
         return null
     }
 
-    fun listPublishers(name: String? = null, page: Int = 1): List<PublisherEntry> {
+    fun listPublishers(title: String? = null, page: Int = 1): List<PublisherEntry> {
         val params = HashMap<String, String>()
         params["page"] = page.toString()
-        if (!name.isNullOrBlank()) {
-            params["name"] = name
+        if (!title.isNullOrBlank()) {
+            params["name"] = title
         }
         val content = sendRequest(uri = encodeURI(endpoint = "/publisher", params = params))
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
-            results.addAll(this.listPublishers(name, page + 1))
+            results.addAll(this.listPublishers(title, page + 1))
         }
         return results
     }
@@ -89,18 +89,24 @@ data class Metron(private val username: String, private val password: String) {
     }
 
     @JvmOverloads
-    fun listSeries(publisherId: Int, name: String? = null, page: Int = 1): List<SeriesEntry> {
+    fun listSeries(publisherId: Int, title: String? = null, volume: Int? = null, startYear: Int? = null, page: Int = 1): List<SeriesEntry> {
         val params = HashMap<String, String>()
         params["publisher_id"] = publisherId.toString()
         params["page"] = page.toString()
-        if (!name.isNullOrBlank()) {
-            params["name"] = name
+        if (!title.isNullOrBlank()) {
+            params["name"] = title
+        }
+        if (volume != null) {
+            params["volume"] = volume.toString()
+        }
+        if (startYear != null) {
+            params["start_year"] = startYear.toString()
         }
         val content = sendRequest(uri = encodeURI(endpoint = "/series", params = params))
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
-            results.addAll(listSeries(publisherId, name, page + 1))
+            results.addAll(listSeries(publisherId, title, page + 1))
         }
         return results
     }

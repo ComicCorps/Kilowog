@@ -251,7 +251,8 @@ data class MetronInfo(
                     },
                 ),
                 series = Metadata.Issue.Series(
-                    format = this.series.format?.titleCase() ?: "Comic",
+                    format = this.series.format?.titleCase()?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.enums.Format>()
+                        ?: github.buriedincode.kilowog.models.metadata.enums.Format.COMIC,
                     resources = listOfNotNull(
                         source?.let {
                             Metadata.Issue.Resource(source = it, value = series.id ?: return@let null)
