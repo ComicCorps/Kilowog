@@ -122,7 +122,7 @@ object App : Logging {
         }.filterValues { it != null }.mapValues { it.value as Metadata }
     }
 
-    private fun parse_pages(folder: Path, metadata: Metadata, filename: String) {
+    private fun parsePages(folder: Path, metadata: Metadata, filename: String) {
         val imageList = Utils.listFiles(path = folder).sorted()
         imageList.filterNot { it.extension == "xml" }.forEachIndexed { index, it ->
             val padCount = imageList.size.toString().length
@@ -195,7 +195,7 @@ object App : Logging {
             val tempFile = file.parent / (file.name + ".kilowog")
             file.moveTo(target = tempFile)
             val filename = metadata.issue.getFilename()
-            parse_pages(folder = tempDir, metadata = metadata, filename = filename)
+            parsePages(folder = tempDir, metadata = metadata, filename = filename)
 
             metadata.toFile(tempDir / "Metadata.xml")
             metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
