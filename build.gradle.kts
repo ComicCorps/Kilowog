@@ -22,7 +22,7 @@ repositories {
 dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.5.1")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.0")
     runtimeOnly("org.xerial", "sqlite-jdbc", "3.42.0.0")
 
     // Hoplite
