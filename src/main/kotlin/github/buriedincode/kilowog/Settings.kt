@@ -26,6 +26,21 @@ data class Settings(
                 allowEmpty = true,
             )
             .addPathSource(
+                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.toml"),
+                optional = true,
+                allowEmpty = true,
+            )
+            .addPathSource(
+                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.json"),
+                optional = true,
+                allowEmpty = true,
+            )
+            .addPathSource(
+                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.conf"),
+                optional = true,
+                allowEmpty = true,
+            )
+            .addPathSource(
                 Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.properties"),
                 optional = true,
                 allowEmpty = true,

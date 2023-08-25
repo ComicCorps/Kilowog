@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.9.0"
-    kotlin("plugin.serialization") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     application
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("com.github.ben-manes.versions") version "0.47.0"
@@ -28,6 +28,9 @@ dependencies {
     // Hoplite
     val hopliteVersion = "2.7.4"
     implementation("com.sksamuel.hoplite", "hoplite-core", hopliteVersion)
+    implementation("com.sksamuel.hoplite", "hoplite-hocon", hopliteVersion)
+    implementation("com.sksamuel.hoplite", "hoplite-json", hopliteVersion)
+    implementation("com.sksamuel.hoplite", "hoplite-toml", hopliteVersion)
     implementation("com.sksamuel.hoplite", "hoplite-yaml", hopliteVersion)
 
     // XmlUtil

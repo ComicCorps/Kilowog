@@ -1,5 +1,6 @@
 package github.buriedincode.kilowog.services
 
+import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
@@ -8,10 +9,15 @@ import github.buriedincode.kilowog.models.metadata.enums.Source
 import github.buriedincode.kilowog.services.metron.issue.IssueEntry
 import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
+import java.nio.file.Paths
 import github.buriedincode.kilowog.Settings.Metron as MetronSettings
 
 class MetronTalker(settings: MetronSettings) {
-    private val metron: Metron = Metron(username = settings.username!!, password = settings.password!!)
+    private val metron: Metron = Metron(
+        username = settings.username!!,
+        password = settings.password!!,
+        cache = SQLiteCache(path = Paths.get(Utils.CACHE_ROOT.toString(), "cache.sqlite"), expiry = 14),
+    )
 
     private fun searchPublishers(title: String): List<PublisherEntry> {
         val publishers = this.metron.listPublishers(title = title)

@@ -21,8 +21,8 @@ import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.stream.Collectors
 
-data class Comicvine(private val apiKey: String) {
-    constructor(apiKey: Secret) : this(apiKey = apiKey.value)
+data class Comicvine(private val apiKey: String, private val cache: SQLiteCache? = null) {
+    constructor(apiKey: Secret, cache: SQLiteCache? = null) : this(apiKey = apiKey.value, cache = cache)
     private fun encodeURI(endpoint: String, params: MutableMap<String, String> = HashMap()): URI {
         params["api_key"] = apiKey
         params["format"] = "json"
@@ -37,6 +37,13 @@ data class Comicvine(private val apiKey: String) {
     private fun sendRequest(uri: URI): String? {
         val regex = "api_key=(.+?)&".toRegex()
         val adjustedUri = regex.replaceFirst(uri.toString(), "api_key=***&")
+        if (this.cache != null) {
+            val cachedResponse = cache.select(url = adjustedUri)
+            if (cachedResponse != null) {
+                logger.info("Using cached response for $adjustedUri")
+                return cachedResponse
+            }
+        }
         try {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -57,6 +64,9 @@ data class Comicvine(private val apiKey: String) {
             }
             logger.log(level, "GET: ${response.statusCode()} - $adjustedUri")
             if (response.statusCode() == 200) {
+                if (this.cache != null) {
+                    cache.insert(url = adjustedUri, response = response.body())
+                }
                 return response.body()
             }
             logger.error(response.body())

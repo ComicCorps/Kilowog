@@ -47,7 +47,7 @@ object App : Logging {
     }
 
     private fun readInfoFile(archiveFile: File, infoFile: String): String? {
-        val tempFile = createTempFile(prefix = "${archiveFile.name}__${infoFile}__", suffix = ".xml").toFile()
+        val tempFile = createTempFile(prefix = "${archiveFile.name}_${infoFile}_", suffix = ".xml").toFile()
         tempFile.deleteOnExit()
 
         if (archiveFile.extension == "cbz") {
@@ -101,25 +101,13 @@ object App : Logging {
         }
     }
 
-    fun readCollection(directory: Path): Map<Path, Metadata> {
+    fun readCollection(directory: Path): Map<Path, Metadata?> {
         val files = Utils.listFiles(directory, "cbz")
         return files.associateWith {
-            Console.print("Parsing Info from: ${it.nameWithoutExtension}")
             readMetadata(archiveFile = it.toFile())
                 ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
                 ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
-                ?: Metadata(
-                    issue = Metadata.Issue(
-                        publisher = Metadata.Issue.Publisher(
-                            title = Console.prompt(prompt = "Publisher title") ?: return@associateWith null,
-                        ),
-                        series = Metadata.Issue.Series(
-                            title = Console.prompt(prompt = "Series title") ?: return@associateWith null,
-                        ),
-                        number = Console.prompt(prompt = "Issue number") ?: return@associateWith null,
-                    ),
-                )
-        }.filterValues { it != null }.mapValues { it.value as Metadata }
+        }
     }
 
     private fun parsePages(folder: Path, metadata: Metadata, filename: String) {
@@ -145,8 +133,8 @@ object App : Logging {
                 Console.print("Renamed ${it.name} to ${newFilename.name}")
                 logger.info("Renamed ${it.name} to ${newFilename.name}")
                 it.moveTo(newFilename, overwrite = false)
-                page.filename = newFilename.name
             }
+            page.filename = newFilename.name
 
             val pages = metadata.pages.toMutableList()
             if (pages.size > index) {
@@ -180,7 +168,22 @@ object App : Logging {
         if (!settings.comicvine.apiKey.isNullOrBlank()) {
             comicvine = ComicvineTalker(settings = settings.comicvine)
         }
-        readCollection(directory = settings.collectionFolder).firstNotNullOf { (file, metadata) ->
+        var collection = readCollection(directory = settings.collectionFolder)
+        collection = collection.filterValues { it == null }.mapValues {
+            Console.print("Missing info for ${it.key.nameWithoutExtension}")
+            Metadata(
+                issue = Metadata.Issue(
+                    publisher = Metadata.Issue.Publisher(
+                        title = Console.prompt(prompt = "Publisher title") ?: return@mapValues null,
+                    ),
+                    series = Metadata.Issue.Series(
+                        title = Console.prompt(prompt = "Series title") ?: return@mapValues null,
+                    ),
+                    number = Console.prompt(prompt = "Issue number") ?: return@mapValues null,
+                ),
+            )
+        }.filterValues { it != null }.mapValues { it.value as Metadata }
+        collection.forEach { (file, metadata) ->
             Console.print("Pulling info for ${file.nameWithoutExtension}")
             var success = metron?.pullMetadata(metadata = metadata) ?: false
             if (!success) {
@@ -190,7 +193,7 @@ object App : Logging {
             if (!success) {
                 logger.warn("Unable to pull info from Comicvine")
             }
-            val tempDir = createTempDirectory(file.nameWithoutExtension)
+            val tempDir = createTempDirectory(prefix = "${file.nameWithoutExtension}_")
             ZipUtils.unzip(srcFile = file, destFolder = tempDir)
             val tempFile = file.parent / (file.name + ".kilowog")
             file.moveTo(target = tempFile)
@@ -205,22 +208,27 @@ object App : Logging {
             tempDir.toFile().deleteRecursively()
             tempFile.toFile().delete()
         }
-        readCollection(directory = settings.collectionFolder).firstNotNullOf { (file, metadata) ->
-            val newLocation = Paths.get(
-                settings.collectionFolder.pathString,
-                metadata.issue.publisher.getFilename(),
-                metadata.issue.series.getFilename(),
-                "${metadata.issue.getFilename()}.${file.extension}",
-            )
-            if (file != newLocation) {
-                Console.print(
-                    "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
+        readCollection(directory = settings.collectionFolder)
+            .filterValues { it != null }
+            .mapValues { it.value as Metadata }
+            .forEach { (file, metadata) ->
+                val newLocation = Paths.get(
+                    settings.collectionFolder.pathString,
+                    metadata.issue.publisher.getFilename(),
+                    metadata.issue.series.getFilename(),
+                    "${metadata.issue.getFilename()}.${file.extension}",
                 )
-                logger.info("Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}")
-                newLocation.parent.toFile().mkdirs()
-                file.moveTo(newLocation, overwrite = false)
+                if (file != newLocation) {
+                    Console.print(
+                        "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
+                    )
+                    logger.info(
+                        "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
+                    )
+                    newLocation.parent.toFile().mkdirs()
+                    file.moveTo(newLocation, overwrite = false)
+                }
             }
-        }
         removeEmptyDirectories(directory = settings.collectionFolder.toFile())
     }
 }

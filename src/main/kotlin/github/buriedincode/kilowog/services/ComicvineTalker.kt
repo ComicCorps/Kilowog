@@ -1,15 +1,20 @@
 package github.buriedincode.kilowog.services
 
+import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
 import github.buriedincode.kilowog.models.metadata.enums.Source
 import github.buriedincode.kilowog.services.comicvine.issue.IssueEntry
 import github.buriedincode.kilowog.services.comicvine.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.comicvine.volume.VolumeEntry
+import java.nio.file.Paths
 import github.buriedincode.kilowog.Settings.Comicvine as ComicvineSettings
 
 class ComicvineTalker(settings: ComicvineSettings) {
-    private val comicvine: Comicvine = Comicvine(apiKey = settings.apiKey!!)
+    private val comicvine: Comicvine = Comicvine(
+        apiKey = settings.apiKey!!,
+        cache = SQLiteCache(path = Paths.get(Utils.CACHE_ROOT.toString(), "cache.sqlite"), expiry = 14),
+    )
 
     private fun searchPublishers(title: String): List<PublisherEntry> {
         val publishers = this.comicvine.listPublishers(title = title)

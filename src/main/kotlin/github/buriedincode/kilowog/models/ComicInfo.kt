@@ -307,7 +307,7 @@ data class ComicInfo(
             pages = this.pages.map {
                 Metadata.Page(
                     doublePage = it.doublePage,
-                    filename = "",
+                    filename = "Missing Page filename",
                     fileSize = it.imageSize ?: 0L,
                     imageHeight = it.imageHeight ?: 0,
                     imageWidth = it.imageWidth ?: 0,

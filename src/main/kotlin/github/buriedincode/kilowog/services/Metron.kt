@@ -22,8 +22,12 @@ import java.time.Duration
 import java.util.Base64
 import java.util.stream.Collectors
 
-data class Metron(private val username: String, private val password: String) {
-    constructor(username: String, password: Secret) : this(username = username, password = password.value)
+data class Metron(private val username: String, private val password: String, private val cache: SQLiteCache? = null) {
+    constructor(
+        username: String,
+        password: Secret,
+        cache: SQLiteCache? = null,
+    ) : this(username = username, password = password.value, cache = cache)
     private fun encodeURI(endpoint: String, params: Map<String, String> = HashMap()): URI {
         var encodedUrl: String = BASE_API + endpoint
         if (params.isNotEmpty()) {
@@ -39,6 +43,13 @@ data class Metron(private val username: String, private val password: String) {
     }
 
     private fun sendRequest(uri: URI): String? {
+        if (this.cache != null) {
+            val cachedResponse = cache.select(url = uri.toString())
+            if (cachedResponse != null) {
+                logger.info("Using cached response for $uri")
+                return cachedResponse
+            }
+        }
         try {
             val request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -57,6 +68,9 @@ data class Metron(private val username: String, private val password: String) {
             }
             logger.log(level, "GET: ${response.statusCode()} - $uri")
             if (response.statusCode() == 200) {
+                if (this.cache != null) {
+                    cache.insert(url = uri.toString(), response = response.body())
+                }
                 return response.body()
             }
             logger.error(response.body())
