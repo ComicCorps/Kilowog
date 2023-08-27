@@ -9,6 +9,7 @@ import github.buriedincode.kilowog.models.metadata.enums.Source
 import github.buriedincode.kilowog.services.metron.issue.IssueEntry
 import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
+import org.apache.logging.log4j.kotlin.Logging
 import java.nio.file.Paths
 import github.buriedincode.kilowog.Settings.Metron as MetronSettings
 
@@ -22,7 +23,7 @@ class MetronTalker(settings: MetronSettings) {
     private fun searchPublishers(title: String): List<PublisherEntry> {
         val publishers = this.metron.listPublishers(title = title)
         if (publishers.isEmpty()) {
-            Console.print("No publishers found with query {\"title\": $title}")
+            logger.warn("No publishers found with query {\"title\": $title}")
         }
         return publishers
     }
@@ -41,6 +42,8 @@ class MetronTalker(settings: MetronSettings) {
                 if (index == 0) {
                     if (Console.confirm(prompt = "Try again")) {
                         publisherTitle = Console.prompt(prompt = "Publisher title") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     publisherId = publishers[index - 1].publisherId
@@ -48,6 +51,7 @@ class MetronTalker(settings: MetronSettings) {
             } while (publisherId == null)
         } else {
             Console.print("Found existing Publisher id")
+            logger.info("Found existing Publisher id")
         }
         val publisher = this.metron.getPublisher(publisherId = publisherId) ?: return null
         val resources = metadata.issue.publisher.resources.toMutableSet()
@@ -64,9 +68,9 @@ class MetronTalker(settings: MetronSettings) {
     private fun searchSeries(publisherId: Int, title: String, volume: Int? = null, startYear: Int? = null): List<SeriesEntry> {
         val seriesList = this.metron.listSeries(publisherId = publisherId, title = title, volume = volume, startYear = startYear)
         if (seriesList.isEmpty()) {
-            Console.print(
+            logger.warn(
                 "No series found with query " +
-                    "{\"publisherId\": $publisherId, \"name\": $title, \"volume\": $volume, \"startYear\": $startYear}",
+                    "{\"publisherId\": $publisherId, \"title\": $title, \"volume\": $volume, \"startYear\": $startYear}",
             )
         }
         return seriesList
@@ -97,6 +101,8 @@ class MetronTalker(settings: MetronSettings) {
                         seriesVolume = null
                     } else if (Console.confirm(prompt = "Try again")) {
                         seriesTitle = Console.prompt(prompt = "Series title") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     seriesId = seriesList[index - 1].seriesId
@@ -104,6 +110,7 @@ class MetronTalker(settings: MetronSettings) {
             } while (seriesId == null)
         } else {
             Console.print("Found existing Series id")
+            logger.info("Found existing Series id")
         }
         val series = this.metron.getSeries(seriesId = seriesId) ?: return null
         val resources = metadata.issue.series.resources.toMutableSet()
@@ -123,7 +130,7 @@ class MetronTalker(settings: MetronSettings) {
     private fun searchIssue(seriesId: Int, number: String? = null): List<IssueEntry> {
         val issues = this.metron.listIssues(seriesId = seriesId, number = number)
         if (issues.isEmpty()) {
-            Console.print("No issues found with query {\"seriesId\": $seriesId, \"number\": $number}")
+            logger.warn("No issues found with query {\"seriesId\": $seriesId, \"number\": $number}")
         }
         return issues
     }
@@ -142,6 +149,8 @@ class MetronTalker(settings: MetronSettings) {
                 if (index == 0) {
                     if (Console.confirm(prompt = "Try again")) {
                         issueNumber = Console.prompt(prompt = "Issue number") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     issueId = issues[index - 1].issueId
@@ -149,6 +158,7 @@ class MetronTalker(settings: MetronSettings) {
             } while (issueId == null)
         } else {
             Console.print("Found existing Issue id")
+            logger.info("Found existing Issue id")
         }
         val issue = this.metron.getIssue(issueId = issueId) ?: return null
         val resources = metadata.issue.resources.toMutableSet()
@@ -201,4 +211,6 @@ class MetronTalker(settings: MetronSettings) {
         val issueId = this.pullIssue(metadata = metadata, seriesId = seriesId) ?: return false
         return true
     }
+
+    companion object : Logging
 }

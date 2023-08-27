@@ -7,6 +7,7 @@ import github.buriedincode.kilowog.models.metadata.enums.Source
 import github.buriedincode.kilowog.services.comicvine.issue.IssueEntry
 import github.buriedincode.kilowog.services.comicvine.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.comicvine.volume.VolumeEntry
+import org.apache.logging.log4j.kotlin.Logging
 import java.nio.file.Paths
 import github.buriedincode.kilowog.Settings.Comicvine as ComicvineSettings
 
@@ -19,7 +20,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
     private fun searchPublishers(title: String): List<PublisherEntry> {
         val publishers = this.comicvine.listPublishers(title = title)
         if (publishers.isEmpty()) {
-            Console.print("No publishers found with query {\"title\": $title}")
+            logger.warn("No publishers found with query {\"title\": $title}")
         }
         return publishers
     }
@@ -30,18 +31,16 @@ class ComicvineTalker(settings: ComicvineSettings) {
             var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
             do {
                 val publishers = this.searchPublishers(title = publisherTitle)
-                val index = if (publishers.isNotEmpty()) {
-                    Console.menu(
-                        choices = publishers.map { "${it.publisherId} - ${it.name}" },
-                        prompt = "Select Comicvine Publisher",
-                        default = "None of the Above",
-                    )
-                } else {
-                    0
-                }
+                val index = Console.menu(
+                    choices = publishers.map { "${it.publisherId} - ${it.name}" },
+                    prompt = "Select Comicvine Publisher",
+                    default = "None of the Above",
+                )
                 if (index == 0) {
                     if (Console.confirm(prompt = "Try again")) {
                         publisherTitle = Console.prompt(prompt = "Publisher title") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     publisherId = publishers[index - 1].publisherId
@@ -49,6 +48,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             } while (publisherId == null)
         } else {
             Console.print("Found existing Publisher id")
+            logger.info("Found existing Publisher id")
         }
         val publisher = this.comicvine.getPublisher(publisherId = publisherId) ?: return null
         val resources = metadata.issue.publisher.resources.toMutableSet()
@@ -62,7 +62,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
     private fun searchVolumes(publisherId: Int, title: String, startYear: Int? = null): List<VolumeEntry> {
         val volumes = this.comicvine.listVolumes(publisherId = publisherId, title = title, startYear = startYear)
         if (volumes.isEmpty()) {
-            Console.print("No volumes found with query {\"publisherId\": $publisherId, \"title\": $title, \"startYear\": $startYear}")
+            logger.warn("No volumes found with query {\"publisherId\": $publisherId, \"title\": $title, \"startYear\": $startYear}")
         }
         return volumes
     }
@@ -74,20 +74,18 @@ class ComicvineTalker(settings: ComicvineSettings) {
             var volumeStartYear: Int? = metadata.issue.series.startYear
             do {
                 val volumes = this.searchVolumes(publisherId = publisherId, title = volumeTitle, startYear = volumeStartYear)
-                val index = if (volumes.isNotEmpty()) {
-                    Console.menu(
-                        choices = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
-                        prompt = "Select Comicvine Volume",
-                        default = "None of the Above",
-                    )
-                } else {
-                    0
-                }
+                val index = Console.menu(
+                    choices = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
+                    prompt = "Select Comicvine Volume",
+                    default = "None of the Above",
+                )
                 if (index == 0) {
                     if (volumeStartYear != null) {
                         volumeStartYear = null
                     } else if (Console.confirm(prompt = "Try again")) {
                         volumeTitle = Console.prompt(prompt = "Volume title") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     volumeId = volumes[index - 1].volumeId
@@ -95,6 +93,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             } while (volumeId == null)
         } else {
             Console.print("Found existing Volume id")
+            logger.info("Found existing Volume id")
         }
         val volume = this.comicvine.getVolume(volumeId = volumeId) ?: return null
         val resources = metadata.issue.series.resources.toMutableSet()
@@ -109,7 +108,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
     private fun searchIssues(volumeId: Int, number: String?): List<IssueEntry> {
         val issues = this.comicvine.listIssues(volumeId = volumeId, number = number)
         if (issues.isEmpty()) {
-            Console.print("No issues found with query {\"volumeId\": $volumeId, \"number\": $number}")
+            logger.warn("No issues found with query {\"volumeId\": $volumeId, \"number\": $number}")
         }
         return issues
     }
@@ -120,18 +119,16 @@ class ComicvineTalker(settings: ComicvineSettings) {
             var issueNumber: String? = metadata.issue.number
             do {
                 val issues = this.searchIssues(volumeId = seriesId, number = issueNumber)
-                val index = if (issues.isNotEmpty()) {
-                    Console.menu(
-                        choices = issues.map { "${it.issueId} - ${it.name}" },
-                        prompt = "Select Comicvine Issue",
-                        default = "None of the Above",
-                    )
-                } else {
-                    0
-                }
+                val index = Console.menu(
+                    choices = issues.map { "${it.issueId} - ${it.name}" },
+                    prompt = "Select Comicvine Issue",
+                    default = "None of the Above",
+                )
                 if (index == 0) {
                     if (Console.confirm(prompt = "Try again")) {
                         issueNumber = Console.prompt(prompt = "Issue number") ?: return null
+                    } else {
+                        return null
                     }
                 } else {
                     issueId = issues[index - 1].issueId
@@ -139,6 +136,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             } while (issueId == null)
         } else {
             Console.print("Found existing Issue id")
+            logger.info("Found existing Issue id")
         }
         val issue = this.comicvine.getIssue(issueId = issueId) ?: return null
         val resources = metadata.issue.resources.toMutableSet()
@@ -192,4 +190,6 @@ class ComicvineTalker(settings: ComicvineSettings) {
         val issueId = this.pullIssue(metadata = metadata, seriesId = seriesId) ?: return false
         return true
     }
+
+    companion object : Logging
 }

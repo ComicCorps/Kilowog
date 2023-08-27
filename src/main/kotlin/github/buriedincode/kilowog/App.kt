@@ -183,31 +183,37 @@ object App : Logging {
                 ),
             )
         }.filterValues { it != null }.mapValues { it.value as Metadata }
-        collection.forEach { (file, metadata) ->
-            Console.print("Pulling info for ${file.nameWithoutExtension}")
-            var success = metron?.pullMetadata(metadata = metadata) ?: false
-            if (!success) {
-                logger.warn("Unable to pull info from Metron")
-                success = comicvine?.pullMetadata(metadata = metadata) ?: false
-            }
-            if (!success) {
-                logger.warn("Unable to pull info from Comicvine")
-            }
-            val tempDir = createTempDirectory(prefix = "${file.nameWithoutExtension}_")
-            ZipUtils.unzip(srcFile = file, destFolder = tempDir)
-            val tempFile = file.parent / (file.name + ".kilowog")
-            file.moveTo(target = tempFile)
-            val filename = metadata.issue.getFilename()
-            parsePages(folder = tempDir, metadata = metadata, filename = filename)
+        readCollection(directory = settings.collectionFolder)
+            .plus(collection)
+            .filterValues { it != null }
+            .mapValues { it.value as Metadata }
+            .forEach { (file, metadata) ->
+                Console.print("Pulling info for ${file.nameWithoutExtension}")
+                Console.print("Using Metron to look for information")
+                var success = metron?.pullMetadata(metadata = metadata) ?: false
+                if (!success) {
+                    logger.warn("Unable to pull info from Metron")
+                    Console.print("Using Comicvine to look for information")
+                    success = comicvine?.pullMetadata(metadata = metadata) ?: false
+                }
+                if (!success) {
+                    logger.warn("Unable to pull info from Comicvine")
+                }
+                val tempDir = createTempDirectory(prefix = "${file.nameWithoutExtension}_")
+                ZipUtils.unzip(srcFile = file, destFolder = tempDir)
+                val tempFile = file.parent / (file.name + ".temp")
+                file.moveTo(target = tempFile)
+                val filename = metadata.issue.getFilename()
+                parsePages(folder = tempDir, metadata = metadata, filename = filename)
 
-            metadata.toFile(tempDir / "Metadata.xml")
-            metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
-            metadata.toComicInfo().toFile(tempDir / "ComicInfo.xml")
+                metadata.toFile(tempDir / "Metadata.xml")
+                metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
+                metadata.toComicInfo().toFile(tempDir / "ComicInfo.xml")
 
-            ZipUtils.zip(destFile = file.parent / "$filename.cbz", content = Utils.listFiles(path = tempDir))
-            tempDir.toFile().deleteRecursively()
-            tempFile.toFile().delete()
-        }
+                ZipUtils.zip(destFile = file.parent / "$filename.cbz", content = Utils.listFiles(path = tempDir))
+                tempDir.toFile().deleteRecursively()
+                tempFile.toFile().delete()
+            }
         readCollection(directory = settings.collectionFolder)
             .filterValues { it != null }
             .mapValues { it.value as Metadata }

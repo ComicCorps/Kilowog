@@ -18,7 +18,12 @@ object ZipUtils {
         ZipInputStream(srcFile.inputStream()).use { `in` ->
             var ze: ZipEntry?
             while (`in`.nextEntry.also { ze = it } != null) {
-                var destFile: Path = destFolder / ze!!.name.subSequence(1, ze!!.name.length).toString()
+                val filename: String = if (ze!!.name.startsWith("/")) {
+                    ze!!.name.drop(1)
+                } else {
+                    ze!!.name
+                }
+                var destFile: Path = destFolder / filename
                 destFile = destFile.normalize()
                 if (!destFile.startsWith(destFolder)) {
                     throw RuntimeException("Entry with an illegal path: ${ze!!.name.subSequence(1, ze!!.name.length)}")
