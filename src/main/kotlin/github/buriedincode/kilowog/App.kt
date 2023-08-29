@@ -33,8 +33,8 @@ import kotlin.io.path.relativeTo
 object App : Logging {
     fun convertCollection(directory: Path) {
         Utils.listFiles(directory, "cbr").forEach { srcFile ->
-            Console.print("Converting $srcFile to CBZ format")
-            logger.info("Converting $srcFile to CBZ format")
+            Console.print("Converting ${srcFile.name} to CBZ format")
+            logger.info("Converting ${srcFile.name} to CBZ format")
             val tempDir = createTempDirectory(srcFile.nameWithoutExtension)
 
             Junrar.extract(srcFile.toFile(), tempDir.toFile())

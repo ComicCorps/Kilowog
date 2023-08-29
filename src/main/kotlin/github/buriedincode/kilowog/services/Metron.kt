@@ -92,9 +92,17 @@ data class Metron(private val username: String, private val password: String, pr
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (response?.next != null) {
-            results.addAll(this.listPublishers(title, page + 1))
+            results.addAll(this.listPublishers(title = title, page = page + 1))
         }
         return results
+    }
+
+    fun getPublisherByComicvine(comicvineId: Int): PublisherEntry? {
+        val params = mapOf("cv_id" to comicvineId.toString())
+        val content = sendRequest(uri = encodeURI(endpoint = "/publisher", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
+        val results = response?.results ?: mutableListOf()
+        return results.firstOrNull()
     }
 
     fun getPublisher(publisherId: Int): Publisher? {
@@ -125,6 +133,14 @@ data class Metron(private val username: String, private val password: String, pr
         return results
     }
 
+    fun getSeriesByComicvine(comicvineId: Int): SeriesEntry? {
+        val params = mapOf("cv_id" to comicvineId.toString())
+        val content = sendRequest(uri = encodeURI(endpoint = "/series", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
+        val results = response?.results ?: mutableListOf()
+        return results.firstOrNull()
+    }
+
     fun getSeries(seriesId: Int): Series? {
         val content = sendRequest(uri = encodeURI(endpoint = "/series/$seriesId"))
         return if (content != null) Utils.JSON_MAPPER.decodeFromString<Series>(content) else null
@@ -145,6 +161,14 @@ data class Metron(private val username: String, private val password: String, pr
             results.addAll(listIssues(seriesId, number, page + 1))
         }
         return results
+    }
+
+    fun getIssueByComicvine(comicvineId: Int): IssueEntry? {
+        val params = mapOf("cv_id" to comicvineId.toString())
+        val content = sendRequest(uri = encodeURI(endpoint = "/issue", params = params))
+        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
+        val results = response?.results ?: mutableListOf()
+        return results.firstOrNull()
     }
 
     fun getIssue(issueId: Int): Issue? {

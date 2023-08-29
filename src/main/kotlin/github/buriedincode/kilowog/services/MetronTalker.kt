@@ -31,6 +31,13 @@ class MetronTalker(settings: MetronSettings) {
     private fun pullPublisher(metadata: Metadata): Int? {
         var publisherId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
         if (publisherId == null) {
+            val comicvineId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            if (comicvineId != null) {
+                val tempPublisher = this.metron.getPublisherByComicvine(comicvineId = comicvineId)
+                publisherId = tempPublisher?.publisherId
+            }
+        }
+        if (publisherId == null) {
             var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
             do {
                 val publishers = this.searchPublishers(title = publisherTitle)
@@ -78,6 +85,13 @@ class MetronTalker(settings: MetronSettings) {
 
     private fun pullSeries(metadata: Metadata, publisherId: Int): Int? {
         var seriesId = metadata.issue.series.resources.firstOrNull { it.source == Source.METRON }?.value
+        if (seriesId == null) {
+            val comicvineId = metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            if (comicvineId != null) {
+                val tempSeries = this.metron.getSeriesByComicvine(comicvineId = comicvineId)
+                seriesId = tempSeries?.seriesId
+            }
+        }
         if (seriesId == null) {
             var seriesTitle: String = metadata.issue.series.title
             var seriesVolume: Int? = metadata.issue.series.volume
@@ -137,6 +151,13 @@ class MetronTalker(settings: MetronSettings) {
 
     private fun pullIssue(metadata: Metadata, seriesId: Int): Int? {
         var issueId = metadata.issue.resources.firstOrNull { it.source == Source.METRON }?.value
+        if (issueId == null) {
+            val comicvineId = metadata.issue.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            if (comicvineId != null) {
+                val tempIssue = this.metron.getIssueByComicvine(comicvineId = comicvineId)
+                issueId = tempIssue?.issueId
+            }
+        }
         if (issueId == null) {
             var issueNumber: String? = metadata.issue.number
             do {
