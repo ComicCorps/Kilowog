@@ -90,7 +90,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
-            results.addAll(listPublishers(title, page + 1))
+            results.addAll(listPublishers(title = title, page = page + 1))
         }
         return results
     }
@@ -113,7 +113,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content) else null
         var results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
-            results.addAll(listVolumes(publisherId, title, page + 1))
+            results.addAll(listVolumes(publisherId = publisherId, title = title, startYear = startYear, page = page + 1))
         }
         results = results.stream().filter { (it.publisher != null) && (it.publisher.id == publisherId) }.toList()
         if (startYear != null) {
@@ -142,7 +142,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<IssueEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
-            results.addAll(listIssues(volumeId, number, page + 1))
+            results.addAll(listIssues(volumeId = volumeId, number = number, page = page + 1))
         }
         return results
     }
