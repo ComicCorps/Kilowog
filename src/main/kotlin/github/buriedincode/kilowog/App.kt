@@ -168,52 +168,44 @@ object App : Logging {
         if (!settings.comicvine.apiKey.isNullOrBlank()) {
             comicvine = ComicvineTalker(settings = settings.comicvine)
         }
-        var collection = readCollection(directory = settings.collectionFolder)
-        collection = collection.filterValues { it == null }.mapValues {
-            Console.print("Missing info for ${it.key.nameWithoutExtension}")
-            Metadata(
+        readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
+            Console.print("Processing ${file.nameWithoutExtension}")
+            val metadata = _metadata ?: Metadata(
                 issue = Metadata.Issue(
                     publisher = Metadata.Issue.Publisher(
-                        title = Console.prompt(prompt = "Publisher title") ?: return@mapValues null,
+                        title = Console.prompt(prompt = "Publisher title") ?: return@forEach,
                     ),
                     series = Metadata.Issue.Series(
-                        title = Console.prompt(prompt = "Series title") ?: return@mapValues null,
+                        title = Console.prompt(prompt = "Series title") ?: return@forEach,
                     ),
-                    number = Console.prompt(prompt = "Issue number") ?: return@mapValues null,
+                    number = Console.prompt(prompt = "Issue number") ?: return@forEach,
                 ),
             )
-        }.filterValues { it != null }.mapValues { it.value as Metadata }
-        readCollection(directory = settings.collectionFolder)
-            .plus(collection)
-            .filterValues { it != null }
-            .mapValues { it.value as Metadata }
-            .forEach { (file, metadata) ->
-                Console.print("Pulling info for ${file.nameWithoutExtension}")
-                Console.print("Using Metron to look for information")
-                var success = metron?.pullMetadata(metadata = metadata) ?: false
-                if (!success) {
-                    logger.warn("Unable to pull info from Metron")
-                    Console.print("Using Comicvine to look for information")
-                    success = comicvine?.pullMetadata(metadata = metadata) ?: false
-                }
-                if (!success) {
-                    logger.warn("Unable to pull info from Comicvine")
-                }
-                val tempDir = createTempDirectory(prefix = "${file.nameWithoutExtension}_")
-                ZipUtils.unzip(srcFile = file, destFolder = tempDir)
-                val tempFile = file.parent / (file.name + ".temp")
-                file.moveTo(target = tempFile)
-                val filename = metadata.issue.getFilename()
-                parsePages(folder = tempDir, metadata = metadata, filename = filename)
-
-                metadata.toFile(tempDir / "Metadata.xml")
-                metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
-                metadata.toComicInfo().toFile(tempDir / "ComicInfo.xml")
-
-                ZipUtils.zip(destFile = file.parent / "$filename.cbz", content = Utils.listFiles(path = tempDir))
-                tempDir.toFile().deleteRecursively()
-                tempFile.toFile().delete()
+            Console.print("Using Metron to look for information")
+            var success = metron?.pullMetadata(metadata = metadata) ?: false
+            if (!success) {
+                logger.warn("Unable to pull info from Metron")
+                Console.print("Using Comicvine to look for information")
+                success = comicvine?.pullMetadata(metadata = metadata) ?: false
             }
+            if (!success) {
+                logger.warn("Unable to pull info from Comicvine")
+            }
+            val tempDir = createTempDirectory(prefix = "${file.nameWithoutExtension}_")
+            ZipUtils.unzip(srcFile = file, destFolder = tempDir)
+            val tempFile = file.parent / (file.name + ".temp")
+            file.moveTo(target = tempFile)
+            val filename = metadata.issue.getFilename()
+            parsePages(folder = tempDir, metadata = metadata, filename = filename)
+
+            metadata.toFile(tempDir / "Metadata.xml")
+            metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
+            metadata.toComicInfo().toFile(tempDir / "ComicInfo.xml")
+
+            ZipUtils.zip(destFile = file.parent / "$filename.cbz", content = Utils.listFiles(path = tempDir))
+            tempDir.toFile().deleteRecursively()
+            tempFile.toFile().delete()
+        }
         readCollection(directory = settings.collectionFolder)
             .filterValues { it != null }
             .mapValues { it.value as Metadata }
