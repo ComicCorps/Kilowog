@@ -23,11 +23,17 @@ data class IssueEntry(
     @JsonNames("issue")
     val name: String,
     val number: String,
-) {
+) : Comparable<IssueEntry> {
     @Serializable
     data class Series(
         val name: String,
         val volume: Int,
         val yearBegan: Int,
     )
+
+    companion object {
+        private val comparator = compareBy(IssueEntry::number).thenBy { it.name }
+    }
+
+    override fun compareTo(other: IssueEntry): Int = comparator.compare(this, other)
 }

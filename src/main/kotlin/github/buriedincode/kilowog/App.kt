@@ -52,7 +52,7 @@ object App : Logging {
 
         if (archiveFile.extension == "cbz") {
             val zip = ZipFile(archiveFile)
-            val entry = zip.getEntry("/$infoFile.xml") ?: return null
+            val entry = zip.getEntry("/$infoFile.xml") ?: zip.getEntry("$infoFile.xml") ?: return null
             zip.getInputStream(entry).use { input ->
                 tempFile.outputStream().use { output ->
                     input.copyTo(output)

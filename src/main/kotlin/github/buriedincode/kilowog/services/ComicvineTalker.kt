@@ -30,7 +30,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         if (publisherId == null) {
             var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
             do {
-                val publishers = this.searchPublishers(title = publisherTitle)
+                val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
                     choices = publishers.map { "${it.publisherId} - ${it.name}" },
                     prompt = "Select Comicvine Publisher",
@@ -73,7 +73,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             var volumeTitle: String = metadata.issue.series.title
             var volumeStartYear: Int? = metadata.issue.series.startYear
             do {
-                val volumes = this.searchVolumes(publisherId = publisherId, title = volumeTitle, startYear = volumeStartYear)
+                val volumes = this.searchVolumes(publisherId = publisherId, title = volumeTitle, startYear = volumeStartYear).sorted()
                 val index = Console.menu(
                     choices = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
                     prompt = "Select Comicvine Volume",
@@ -118,7 +118,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         if (issueId == null) {
             var issueNumber: String? = metadata.issue.number
             do {
-                val issues = this.searchIssues(volumeId = seriesId, number = issueNumber)
+                val issues = this.searchIssues(volumeId = seriesId, number = issueNumber).sorted()
                 val index = Console.menu(
                     choices = issues.map { "${it.issueId} - ${it.name}" },
                     prompt = "Select Comicvine Issue",

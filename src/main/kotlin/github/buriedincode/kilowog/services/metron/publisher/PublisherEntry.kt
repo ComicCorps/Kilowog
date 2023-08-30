@@ -15,4 +15,10 @@ data class PublisherEntry(
     val name: String,
     @JsonNames("id")
     val publisherId: Int,
-)
+) : Comparable<PublisherEntry> {
+    companion object {
+        private val comparator = compareBy(PublisherEntry::name)
+    }
+
+    override fun compareTo(other: PublisherEntry): Int = comparator.compare(this, other)
+}

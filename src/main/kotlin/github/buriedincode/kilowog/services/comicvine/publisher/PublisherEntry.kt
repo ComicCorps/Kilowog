@@ -29,4 +29,10 @@ data class PublisherEntry(
     val siteUrl: String,
     @JsonNames("deck")
     val summary: String? = null,
-)
+) : Comparable<PublisherEntry> {
+    companion object {
+        private val comparator = compareBy(PublisherEntry::name)
+    }
+
+    override fun compareTo(other: PublisherEntry): Int = comparator.compare(this, other)
+}

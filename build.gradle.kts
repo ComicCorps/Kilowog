@@ -23,7 +23,7 @@ dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.0")
-    runtimeOnly("org.xerial", "sqlite-jdbc", "3.42.0.1")
+    runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.0.0")
 
     // Hoplite
     val hopliteVersion = "2.7.4"

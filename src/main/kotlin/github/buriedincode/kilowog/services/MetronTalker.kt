@@ -40,7 +40,7 @@ class MetronTalker(settings: MetronSettings) {
         if (publisherId == null) {
             var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
             do {
-                val publishers = this.searchPublishers(title = publisherTitle)
+                val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
                     choices = publishers.map { "${it.publisherId} - ${it.name}" },
                     prompt = "Select Metron Publisher",
@@ -102,7 +102,7 @@ class MetronTalker(settings: MetronSettings) {
                     title = seriesTitle,
                     volume = seriesVolume,
                     startYear = seriesStartYear,
-                )
+                ).sorted()
                 val index = Console.menu(
                     choices = seriesList.map { "${it.seriesId} - ${it.name}" },
                     prompt = "Select Metron Series",
@@ -161,7 +161,7 @@ class MetronTalker(settings: MetronSettings) {
         if (issueId == null) {
             var issueNumber: String? = metadata.issue.number
             do {
-                val issues = this.searchIssue(seriesId = seriesId, number = issueNumber)
+                val issues = this.searchIssue(seriesId = seriesId, number = issueNumber).sorted()
                 val index = Console.menu(
                     choices = issues.map { "${it.issueId} - ${it.name}" },
                     prompt = "Select Metron Issue",

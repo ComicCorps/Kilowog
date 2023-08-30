@@ -36,4 +36,10 @@ data class IssueEntry(
     @JsonNames("deck")
     val summary: String? = null,
     val volume: GenericEntry,
-)
+) : Comparable<IssueEntry> {
+    companion object {
+        private val comparator = compareBy(IssueEntry::number).thenBy { it.name }
+    }
+
+    override fun compareTo(other: IssueEntry): Int = comparator.compare(this, other)
+}

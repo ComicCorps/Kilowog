@@ -1,6 +1,7 @@
 package github.buriedincode.kilowog.services.comicvine.volume
 
 import github.buriedincode.kilowog.LocalDateTimeSerializer
+import github.buriedincode.kilowog.StartYearSerializer
 import github.buriedincode.kilowog.services.comicvine.GenericEntry
 import github.buriedincode.kilowog.services.comicvine.Image
 import github.buriedincode.kilowog.services.comicvine.IssueEntry
@@ -29,9 +30,16 @@ data class VolumeEntry(
     val publisher: GenericEntry? = null,
     @JsonNames("site_detail_url")
     val siteUrl: String,
+    @Serializable(with = StartYearSerializer::class)
     val startYear: Int? = null,
     @JsonNames("deck")
     val summary: String? = null,
     @JsonNames("id")
     val volumeId: Int,
-)
+) : Comparable<VolumeEntry> {
+    companion object {
+        private val comparator = compareBy(VolumeEntry::name).thenBy { it.startYear }
+    }
+
+    override fun compareTo(other: VolumeEntry): Int = comparator.compare(this, other)
+}
