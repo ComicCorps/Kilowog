@@ -10,6 +10,7 @@ import github.buriedincode.kilowog.services.ComicvineTalker
 import github.buriedincode.kilowog.services.MetronTalker
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
@@ -74,6 +75,9 @@ object App : Logging {
         } catch (mfe: MissingFieldException) {
             logger.error("Metadata config is invalid: ${mfe.message}")
             null
+        } catch (se: SerializationException) {
+            logger.error("Metadata config is invalid: ${se.message}")
+            null
         }
     }
 
@@ -86,6 +90,9 @@ object App : Logging {
         } catch (mfe: MissingFieldException) {
             logger.error("MetronInfo config is invalid: ${mfe.message}")
             null
+        } catch (se: SerializationException) {
+            logger.error("MetronInfo config is invalid: ${se.message}")
+            null
         }
     }
 
@@ -97,6 +104,9 @@ object App : Logging {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (mfe: MissingFieldException) {
             logger.error("ComicInfo config is invalid: ${mfe.message}")
+            null
+        } catch (se: SerializationException) {
+            logger.error("ComicInfo config is invalid: ${se.message}")
             null
         }
     }
@@ -112,7 +122,7 @@ object App : Logging {
 
     private fun parsePages(folder: Path, metadata: Metadata, filename: String) {
         val imageList = Utils.listFiles(path = folder).sorted()
-        imageList.filterNot { it.extension == "xml" }.forEachIndexed { index, it ->
+        imageList.filterNot { it.extension == "xml" || it.extension == "json" }.forEachIndexed { index, it ->
             val padCount = imageList.size.toString().length
             val newPage = metadata.pages.getOrNull(index = index) == null
             val page = metadata.pages.getOrNull(index = index) ?: Metadata.Page(filename = it.name, index = index)

@@ -42,7 +42,7 @@ class MetronTalker(settings: MetronSettings) {
             do {
                 val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
-                    choices = publishers.map { "${it.publisherId} - ${it.name}" },
+                    choices = publishers.map { "${it.publisherId} | ${it.name}" },
                     prompt = "Select Metron Publisher",
                     default = "None of the Above",
                 )
@@ -104,7 +104,7 @@ class MetronTalker(settings: MetronSettings) {
                     startYear = seriesStartYear,
                 ).sorted()
                 val index = Console.menu(
-                    choices = seriesList.map { "${it.seriesId} - ${it.name}" },
+                    choices = seriesList.map { "${it.seriesId} | ${it.name}" },
                     prompt = "Select Metron Series",
                     default = "None of the Above",
                 )
@@ -163,7 +163,7 @@ class MetronTalker(settings: MetronSettings) {
             do {
                 val issues = this.searchIssue(seriesId = seriesId, number = issueNumber).sorted()
                 val index = Console.menu(
-                    choices = issues.map { "${it.issueId} - ${it.name}" },
+                    choices = issues.map { "${it.issueId} | ${it.number} - ${it.name}" },
                     prompt = "Select Metron Issue",
                     default = "None of the Above",
                 )

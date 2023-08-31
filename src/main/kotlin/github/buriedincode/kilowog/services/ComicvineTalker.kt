@@ -32,7 +32,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             do {
                 val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
-                    choices = publishers.map { "${it.publisherId} - ${it.name}" },
+                    choices = publishers.map { "${it.publisherId} | ${it.name}" },
                     prompt = "Select Comicvine Publisher",
                     default = "None of the Above",
                 )
@@ -75,7 +75,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             do {
                 val volumes = this.searchVolumes(publisherId = publisherId, title = volumeTitle, startYear = volumeStartYear).sorted()
                 val index = Console.menu(
-                    choices = volumes.map { "${it.volumeId} - ${it.name} (${it.startYear})" },
+                    choices = volumes.map { "${it.volumeId} | ${it.name} (${it.startYear})" },
                     prompt = "Select Comicvine Volume",
                     default = "None of the Above",
                 )
@@ -120,7 +120,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
             do {
                 val issues = this.searchIssues(volumeId = seriesId, number = issueNumber).sorted()
                 val index = Console.menu(
-                    choices = issues.map { "${it.issueId} - ${it.name}" },
+                    choices = issues.map { "${it.issueId} | ${it.number} - ${it.name}" },
                     prompt = "Select Comicvine Issue",
                     default = "None of the Above",
                 )
