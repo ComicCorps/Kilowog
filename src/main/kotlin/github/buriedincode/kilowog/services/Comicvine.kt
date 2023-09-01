@@ -23,24 +23,26 @@ import java.util.stream.Collectors
 
 data class Comicvine(private val apiKey: String, private val cache: SQLiteCache? = null) {
     constructor(apiKey: Secret, cache: SQLiteCache? = null) : this(apiKey = apiKey.value, cache = cache)
+    private val regex = "api_key=(.+?)&".toRegex()
     private fun encodeURI(endpoint: String, params: MutableMap<String, String> = HashMap()): URI {
         params["api_key"] = apiKey
         params["format"] = "json"
         val encodedUrl = params.keys
             .stream()
             .sorted()
-            .map { key: String -> key + "=" + URLEncoder.encode(params[key], StandardCharsets.UTF_8) }
+            .map {
+                "$it=${URLEncoder.encode(params[it], StandardCharsets.UTF_8)}"
+            }
             .collect(Collectors.joining("&", "$BASE_API$endpoint?", ""))
         return URI.create(encodedUrl)
     }
 
     private fun sendRequest(uri: URI): String? {
-        val regex = "api_key=(.+?)&".toRegex()
         val adjustedUri = regex.replaceFirst(uri.toString(), "api_key=***&")
         if (this.cache != null) {
             val cachedResponse = cache.select(url = adjustedUri)
             if (cachedResponse != null) {
-                logger.info("Using cached response for $adjustedUri")
+                logger.debug("Using cached response for $adjustedUri")
                 return cachedResponse
             }
         }
@@ -57,16 +59,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
             val response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString())
             val level = when {
                 response.statusCode() in (100 until 200) -> Level.WARN
-                response.statusCode() in (200 until 300) -> Level.INFO
+                response.statusCode() in (200 until 300) -> Level.DEBUG
                 response.statusCode() in (300 until 400) -> Level.INFO
                 response.statusCode() in (400 until 500) -> Level.WARN
                 else -> Level.ERROR
             }
             logger.log(level, "GET: ${response.statusCode()} - $adjustedUri")
             if (response.statusCode() == 200) {
-                if (this.cache != null) {
-                    cache.insert(url = adjustedUri, response = response.body())
-                }
                 return response.body()
             }
             logger.error(response.body())
@@ -86,9 +85,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         if (!title.isNullOrBlank()) {
             params["filter"] = "name:$title"
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/publishers", params = params))
+        val uri = encodeURI(endpoint = "/publishers", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
+        }
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listPublishers(title = title, page = page + 1))
         }
@@ -96,7 +99,11 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     fun getPublisher(publisherId: Int): Publisher? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/publisher/${Resource.PUBLISHER.resourceId}-$publisherId"))
+        val uri = encodeURI(endpoint = "/publisher/${Resource.PUBLISHER.resourceId}-$publisherId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
+        }
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Publisher>>(content) else null
         return response?.results
     }
@@ -109,9 +116,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         if (!title.isNullOrBlank()) {
             params["filter"] = "name:$title"
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/volumes", params = params))
+        val uri = encodeURI(endpoint = "/volumes", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content) else null
         var results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
+        }
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listVolumes(publisherId = publisherId, title = title, startYear = startYear, page = page + 1))
         }
@@ -123,7 +134,11 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     fun getVolume(volumeId: Int): Volume? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/volume/${Resource.VOLUME.resourceId}-$volumeId"))
+        val uri = encodeURI(endpoint = "/volume/${Resource.VOLUME.resourceId}-$volumeId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
+        }
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Volume>>(content) else null
         return response?.results
     }
@@ -138,9 +153,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         } else {
             params["filter"] = "volume:$volumeId"
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/issues", params = params))
+        val uri = encodeURI(endpoint = "/issues", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<IssueEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
+        }
         if ((response?.totalResults ?: -1) >= page * PAGE_LIMIT) {
             results.addAll(listIssues(volumeId = volumeId, number = number, page = page + 1))
         }
@@ -148,7 +167,11 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     fun getIssue(issueId: Int): Issue? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/issue/${Resource.ISSUE.resourceId}-$issueId"))
+        val uri = encodeURI(endpoint = "/issue/${Resource.ISSUE.resourceId}-$issueId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
+        }
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Issue>>(content) else null
         return response?.results
     }

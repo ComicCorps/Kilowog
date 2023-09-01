@@ -3,8 +3,12 @@ package github.buriedincode.kilowog.models
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
-import github.buriedincode.kilowog.models.metadata.enums.Format
-import github.buriedincode.kilowog.models.metadata.enums.Source
+import github.buriedincode.kilowog.models.comicinfo.PageType
+import github.buriedincode.kilowog.models.metadata.Format
+import github.buriedincode.kilowog.models.metadata.Source
+import github.buriedincode.kilowog.models.metroninfo.Genre
+import github.buriedincode.kilowog.models.metroninfo.InformationSource
+import github.buriedincode.kilowog.models.metroninfo.Role
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -56,8 +60,6 @@ data class Metadata(
         var number: String? = null,
         @XmlSerialName("PageCount")
         var pageCount: Int = 0,
-        @XmlSerialName("Publisher")
-        var publisher: Publisher,
         @XmlSerialName("Resources")
         @XmlChildrenName("Resource")
         var resources: List<Resource> = emptyList(),
@@ -76,20 +78,6 @@ data class Metadata(
         @XmlSerialName("Title")
         var title: String? = null,
     ) {
-
-        @Serializable
-        data class Publisher(
-            @XmlSerialName("Imprint")
-            var imprint: String? = null,
-            @XmlSerialName("Resources")
-            @XmlChildrenName("Resource")
-            var resources: List<Resource> = emptyList(),
-            @XmlSerialName("Title")
-            var title: String,
-        ) {
-            fun getFilename(): String = Utils.sanitize(if (imprint == null) title else "$title ($imprint)")
-        }
-
         @Serializable
         class Resource(
             @XmlElement(false)
@@ -119,6 +107,8 @@ data class Metadata(
         data class Series(
             @XmlSerialName("Format")
             var format: Format = Format.COMIC,
+            @XmlSerialName("Publisher")
+            var publisher: Publisher,
             @XmlSerialName("Resources")
             @XmlChildrenName("Resource")
             var resources: List<Resource> = emptyList(),
@@ -129,6 +119,19 @@ data class Metadata(
             @XmlSerialName("Volume")
             var volume: Int = 1,
         ) {
+            @Serializable
+            data class Publisher(
+                @XmlSerialName("Imprint")
+                var imprint: String? = null,
+                @XmlSerialName("Resources")
+                @XmlChildrenName("Resource")
+                var resources: List<Resource> = emptyList(),
+                @XmlSerialName("Title")
+                var title: String,
+            ) {
+                fun getFilename(): String = Utils.sanitize(if (imprint == null) title else "$title ($imprint)")
+            }
+
             fun getFilename(): String {
                 var output = if (volume == 1) title else "$title v$volume"
                 output += "_($format)"
@@ -166,9 +169,29 @@ data class Metadata(
         )
 
         fun getFilename(): String {
-            val volumeTitle = if (series.volume == 1) series.title else "$series.title v${series.volume}"
-            val output = if (number != null) "_#$number" else if (title != null) "_$title" else ""
-            return Utils.sanitize(volumeTitle + output)
+            val seriesTitle = if (series.volume == 1) series.title else "${series.title} v${series.volume}"
+            val issueTitle = if (number != null) {
+                "_#${number!!.padStart(if (series.format == Format.COMIC) 3 else 2, '0')}"
+            } else if (title != null) {
+                "_$title"
+            } else {
+                ""
+            }
+            val issueFormat = when (series.format) {
+                Format.ANNUAL -> "_Annual"
+                Format.DIGITAL_CHAPTER -> "_Chapter"
+                Format.GRAPHIC_NOVEL -> "_GN"
+                Format.HARDCOVER -> "_HC"
+                Format.TRADE_PAPERBACK -> "_TP"
+                else -> ""
+            }
+            return Utils.sanitize(
+                value = when (series.format) {
+                    Format.ANNUAL, Format.DIGITAL_CHAPTER -> seriesTitle + issueFormat + issueTitle
+                    Format.GRAPHIC_NOVEL, Format.HARDCOVER, Format.TRADE_PAPERBACK -> seriesTitle + issueTitle + issueFormat
+                    else -> seriesTitle + issueTitle
+                },
+            )
         }
     }
 
@@ -209,7 +232,7 @@ data class Metadata(
     fun toComicInfo(): ComicInfo {
         return ComicInfo(
             format = this.issue.series.format.titleCase(),
-            imprint = this.issue.publisher.imprint,
+            imprint = this.issue.series.publisher.imprint,
             language = this.issue.language,
             notes = this.notes,
             number = this.issue.number,
@@ -221,11 +244,11 @@ data class Metadata(
                     imageHeight = it.imageHeight,
                     imageSize = it.fileSize,
                     imageWidth = it.imageWidth,
-                    type = it.type.asEnumOrNull<github.buriedincode.kilowog.models.comicinfo.enums.PageType>()
-                        ?: github.buriedincode.kilowog.models.comicinfo.enums.PageType.STORY,
+                    type = it.type.asEnumOrNull<PageType>()
+                        ?: PageType.STORY,
                 )
             },
-            publisher = this.issue.publisher.title,
+            publisher = this.issue.series.publisher.title,
             series = this.issue.series.title,
             summary = this.issue.summary,
             title = this.issue.title,
@@ -287,19 +310,19 @@ data class Metadata(
                     ),
                     roles = it.roles.mapNotNull {
                         MetronInfo.RoleResource(
-                            value = it.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.Role>() ?: return@mapNotNull null,
+                            value = it.asEnumOrNull<Role>() ?: return@mapNotNull null,
                         )
                     },
                 )
             },
             genres = this.issue.genres.mapNotNull {
                 MetronInfo.GenreResource(
-                    value = it.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.Genre>() ?: return@mapNotNull null,
+                    value = it.asEnumOrNull<Genre>() ?: return@mapNotNull null,
                 )
             },
-            id = if (source?.titleCase()?.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.InformationSource>() != null) {
+            id = if (source?.titleCase()?.asEnumOrNull<InformationSource>() != null) {
                 MetronInfo.Source(
-                    source = source.titleCase().asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.InformationSource>()!!,
+                    source = source.titleCase().asEnumOrNull<InformationSource>()!!,
                     value = this.issue.resources.firstOrNull { it.source == source }?.value ?: return null,
                 )
             } else {
@@ -321,16 +344,16 @@ data class Metadata(
                     imageHeight = it.imageHeight,
                     imageSize = it.fileSize,
                     imageWidth = it.imageWidth,
-                    type = it.type.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.PageType>()
-                        ?: github.buriedincode.kilowog.models.metroninfo.enums.PageType.STORY,
+                    type = it.type.asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.PageType>()
+                        ?: github.buriedincode.kilowog.models.metroninfo.PageType.STORY,
                 )
             },
             publisher = MetronInfo.Resource(
-                id = this.issue.publisher.resources.firstOrNull { it.source == source }?.value,
-                value = this.issue.publisher.imprint ?: this.issue.publisher.title,
+                id = this.issue.series.publisher.resources.firstOrNull { it.source == source }?.value,
+                value = this.issue.series.publisher.imprint ?: this.issue.series.publisher.title,
             ),
             series = MetronInfo.Series(
-                format = this.issue.series.format.titleCase().asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.enums.Format>(),
+                format = this.issue.series.format.titleCase().asEnumOrNull<github.buriedincode.kilowog.models.metroninfo.Format>(),
                 id = this.issue.series.resources.firstOrNull { it.source == source }?.value,
                 lang = this.issue.language,
                 name = this.issue.series.title,

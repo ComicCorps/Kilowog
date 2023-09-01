@@ -5,7 +5,7 @@ import com.sksamuel.hoplite.Secret
 import com.sksamuel.hoplite.addPathSource
 import com.sksamuel.hoplite.addResourceSource
 import java.nio.file.Path
-import java.nio.file.Paths
+import kotlin.io.path.div
 
 data class Settings(
     val collectionFolder: Path,
@@ -20,31 +20,11 @@ data class Settings(
     data class Metron(val username: String?, val password: Secret?)
     companion object {
         fun load(): Settings = ConfigLoaderBuilder.default()
-            .addPathSource(
-                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.yaml"),
-                optional = true,
-                allowEmpty = true,
-            )
-            .addPathSource(
-                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.toml"),
-                optional = true,
-                allowEmpty = true,
-            )
-            .addPathSource(
-                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.json"),
-                optional = true,
-                allowEmpty = true,
-            )
-            .addPathSource(
-                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.conf"),
-                optional = true,
-                allowEmpty = true,
-            )
-            .addPathSource(
-                Paths.get(System.getProperty("user.home"), ".config", "kilowog", "settings.properties"),
-                optional = true,
-                allowEmpty = true,
-            )
+            .addPathSource(Utils.CONFIG_ROOT / "settings.yaml", optional = true, allowEmpty = true)
+            .addPathSource(Utils.CONFIG_ROOT / "settings.toml", optional = true, allowEmpty = true)
+            .addPathSource(Utils.CONFIG_ROOT / "settings.json", optional = true, allowEmpty = true)
+            .addPathSource(Utils.CONFIG_ROOT / "settings.conf", optional = true, allowEmpty = true)
+            .addPathSource(Utils.CONFIG_ROOT / "settings.properties", optional = true, allowEmpty = true)
             .addResourceSource("/default.yaml")
             .build()
             .loadConfigOrThrow<Settings>()

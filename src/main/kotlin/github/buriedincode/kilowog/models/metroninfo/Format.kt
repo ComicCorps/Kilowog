@@ -1,26 +1,26 @@
-package github.buriedincode.kilowog.models.metadata.enums
+package github.buriedincode.kilowog.models.metroninfo
 
 import github.buriedincode.kilowog.Utils.titleCase
 import kotlinx.serialization.SerialName
 
 enum class Format {
-    @SerialName("Comic")
-    COMIC,
-
-    @SerialName("Digital Chapter")
-    DIGITAL_CHAPTER,
-
     @SerialName("Annual")
     ANNUAL,
 
-    @SerialName("Trade Paperback")
-    TRADE_PAPERBACK,
-
-    @SerialName("Hardcover")
-    HARDCOVER,
-
     @SerialName("Graphic Novel")
     GRAPHIC_NOVEL,
+
+    @SerialName("Limited")
+    LIMITED,
+
+    @SerialName("One-Shot")
+    ONE_SHOT,
+
+    @SerialName("Series")
+    SERIES,
+
+    @SerialName("Trade Paperback")
+    TRADE_PAPERBACK,
 
     ;
 

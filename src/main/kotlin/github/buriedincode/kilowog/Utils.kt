@@ -6,19 +6,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
-import org.apache.logging.log4j.kotlin.Logging
-import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.walkTopDown
 
-object Utils : Logging {
+object Utils {
+    private val HOME_ROOT = Paths.get(System.getProperty("user.home"))
     internal const val VERSION = "0.0.0"
-    internal val CACHE_ROOT = Paths.get(System.getProperty("user.home"), ".cache", "kilowog")
-    internal val CONFIG_ROOT = Paths.get(System.getProperty("user.home"), ".config", "kilowog")
-    internal val DATA_ROOT = Paths.get(System.getProperty("user.home"), ".local", "share", "kilowog")
+    internal val CACHE_ROOT = HOME_ROOT / ".cache" / "kilowog"
+    internal val CONFIG_ROOT = HOME_ROOT / ".config" / "kilowog"
+    internal val DATA_ROOT = HOME_ROOT / ".local" / "share" / "kilowog"
 
     val XML_MAPPER: XML = XML {
         indent = 4
@@ -35,25 +35,13 @@ object Utils : Logging {
 
     init {
         if (!Files.exists(CACHE_ROOT)) {
-            try {
-                Files.createDirectories(CACHE_ROOT)
-            } catch (ioe: IOException) {
-                logger.error("Unable to create cache folder", ioe)
-            }
+            CACHE_ROOT.toFile().mkdirs()
         }
         if (!Files.exists(CONFIG_ROOT)) {
-            try {
-                Files.createDirectories(CONFIG_ROOT)
-            } catch (ioe: IOException) {
-                logger.error("Unable to create config folder", ioe)
-            }
+            CONFIG_ROOT.toFile().mkdirs()
         }
         if (!Files.exists(DATA_ROOT)) {
-            try {
-                Files.createDirectories(DATA_ROOT)
-            } catch (ioe: IOException) {
-                logger.error("Unable to create data folder", ioe)
-            }
+            DATA_ROOT.toFile().mkdirs()
         }
     }
 

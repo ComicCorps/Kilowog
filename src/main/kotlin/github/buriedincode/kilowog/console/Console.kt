@@ -64,8 +64,6 @@ internal object Console : Logging {
         return output
     }
 
-    internal fun print(value: Any?) = colourOutput(value = value?.toString(), colour = STANDARD)
-
     private fun colourPair(
         value: Pair<String, String?>,
         colours: Pair<Colour, Colour> = HIGHLIGHT to STANDARD,

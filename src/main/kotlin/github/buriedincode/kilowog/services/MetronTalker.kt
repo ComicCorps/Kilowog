@@ -4,8 +4,8 @@ import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
-import github.buriedincode.kilowog.models.metadata.enums.Format
-import github.buriedincode.kilowog.models.metadata.enums.Source
+import github.buriedincode.kilowog.models.metadata.Format
+import github.buriedincode.kilowog.models.metadata.Source
 import github.buriedincode.kilowog.services.metron.issue.IssueEntry
 import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
@@ -29,16 +29,16 @@ class MetronTalker(settings: MetronSettings) {
     }
 
     private fun pullPublisher(metadata: Metadata): Int? {
-        var publisherId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
+        var publisherId = metadata.issue.series.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
         if (publisherId == null) {
-            val comicvineId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+            val comicvineId = metadata.issue.series.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
             if (comicvineId != null) {
                 val tempPublisher = this.metron.getPublisherByComicvine(comicvineId = comicvineId)
                 publisherId = tempPublisher?.publisherId
             }
         }
         if (publisherId == null) {
-            var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
+            var publisherTitle: String = metadata.issue.series.publisher.imprint ?: metadata.issue.series.publisher.title
             do {
                 val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
@@ -57,17 +57,16 @@ class MetronTalker(settings: MetronSettings) {
                 }
             } while (publisherId == null)
         } else {
-            Console.print("Found existing Publisher id")
             logger.info("Found existing Publisher id")
         }
         val publisher = this.metron.getPublisher(publisherId = publisherId) ?: return null
-        val resources = metadata.issue.publisher.resources.toMutableSet()
+        val resources = metadata.issue.series.publisher.resources.toMutableSet()
         resources.add(Metadata.Issue.Resource(source = Source.METRON, value = publisherId))
         if (publisher.comicvineId != null) {
             resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = publisher.comicvineId))
         }
-        metadata.issue.publisher.resources = resources.toList()
-        metadata.issue.publisher.title = publisher.name
+        metadata.issue.series.publisher.resources = resources.toList()
+        metadata.issue.series.publisher.title = publisher.name
 
         return publisherId
     }
@@ -123,7 +122,6 @@ class MetronTalker(settings: MetronSettings) {
                 }
             } while (seriesId == null)
         } else {
-            Console.print("Found existing Series id")
             logger.info("Found existing Series id")
         }
         val series = this.metron.getSeries(seriesId = seriesId) ?: return null
@@ -133,7 +131,11 @@ class MetronTalker(settings: MetronSettings) {
             resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = series.comicvineId))
         }
         metadata.issue.series.resources = resources.toList()
-        metadata.issue.series.format = series.seriesType.name.asEnumOrNull<Format>() ?: metadata.issue.series.format
+        if (series.seriesType.name.equals("Hard Cover", ignoreCase = true)) {
+            metadata.issue.series.format = Format.HARDCOVER
+        } else {
+            metadata.issue.series.format = series.seriesType.name.asEnumOrNull<Format>() ?: metadata.issue.series.format
+        }
         metadata.issue.series.startYear = series.yearBegan
         metadata.issue.series.title = series.name
         metadata.issue.series.volume = series.volume
@@ -178,7 +180,6 @@ class MetronTalker(settings: MetronSettings) {
                 }
             } while (issueId == null)
         } else {
-            Console.print("Found existing Issue id")
             logger.info("Found existing Issue id")
         }
         val issue = this.metron.getIssue(issueId = issueId) ?: return null

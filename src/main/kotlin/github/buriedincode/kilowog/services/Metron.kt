@@ -46,7 +46,7 @@ data class Metron(private val username: String, private val password: String, pr
         if (this.cache != null) {
             val cachedResponse = cache.select(url = uri.toString())
             if (cachedResponse != null) {
-                logger.info("Using cached response for $uri")
+                logger.debug("Using cached response for $uri")
                 return cachedResponse
             }
         }
@@ -61,16 +61,13 @@ data class Metron(private val username: String, private val password: String, pr
             val response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString())
             val level = when {
                 response.statusCode() in (100 until 200) -> Level.WARN
-                response.statusCode() in (200 until 300) -> Level.INFO
+                response.statusCode() in (200 until 300) -> Level.DEBUG
                 response.statusCode() in (300 until 400) -> Level.INFO
                 response.statusCode() in (400 until 500) -> Level.WARN
                 else -> Level.ERROR
             }
             logger.log(level, "GET: ${response.statusCode()} - $uri")
             if (response.statusCode() == 200) {
-                if (this.cache != null) {
-                    cache.insert(url = uri.toString(), response = response.body())
-                }
                 return response.body()
             }
             logger.error(response.body())
@@ -88,9 +85,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (!title.isNullOrBlank()) {
             params["name"] = title
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/publisher", params = params))
+        val uri = encodeURI(endpoint = "/publisher", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         if (response?.next != null) {
             results.addAll(this.listPublishers(title = title, page = page + 1))
         }
@@ -99,14 +100,22 @@ data class Metron(private val username: String, private val password: String, pr
 
     fun getPublisherByComicvine(comicvineId: Int): PublisherEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
-        val content = sendRequest(uri = encodeURI(endpoint = "/publisher", params = params))
+        val uri = encodeURI(endpoint = "/publisher", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         return results.firstOrNull()
     }
 
     fun getPublisher(publisherId: Int): Publisher? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/publisher/$publisherId"))
+        val uri = encodeURI(endpoint = "/publisher/$publisherId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content)
+        }
         return if (content != null) Utils.JSON_MAPPER.decodeFromString<Publisher>(content) else null
     }
 
@@ -124,9 +133,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (startYear != null) {
             params["start_year"] = startYear.toString()
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/series", params = params))
+        val uri = encodeURI(endpoint = "/series", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         if (response?.next != null) {
             results.addAll(listSeries(publisherId, title, page + 1))
         }
@@ -135,14 +148,22 @@ data class Metron(private val username: String, private val password: String, pr
 
     fun getSeriesByComicvine(comicvineId: Int): SeriesEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
-        val content = sendRequest(uri = encodeURI(endpoint = "/series", params = params))
+        val uri = encodeURI(endpoint = "/series", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         return results.firstOrNull()
     }
 
     fun getSeries(seriesId: Int): Series? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/series/$seriesId"))
+        val uri = encodeURI(endpoint = "/series/$seriesId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content)
+        }
         return if (content != null) Utils.JSON_MAPPER.decodeFromString<Series>(content) else null
     }
 
@@ -154,9 +175,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (!number.isNullOrBlank()) {
             params["number"] = number
         }
-        val content = sendRequest(uri = encodeURI(endpoint = "/issue", params = params))
+        val uri = encodeURI(endpoint = "/issue", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         if (response?.next != null) {
             results.addAll(listIssues(seriesId, number, page + 1))
         }
@@ -165,14 +190,22 @@ data class Metron(private val username: String, private val password: String, pr
 
     fun getIssueByComicvine(comicvineId: Int): IssueEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
-        val content = sendRequest(uri = encodeURI(endpoint = "/issue", params = params))
+        val uri = encodeURI(endpoint = "/issue", params = params)
+        val content = sendRequest(uri = uri)
         val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
         val results = response?.results ?: mutableListOf()
+        if (results.isNotEmpty() && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content!!)
+        }
         return results.firstOrNull()
     }
 
     fun getIssue(issueId: Int): Issue? {
-        val content = sendRequest(uri = encodeURI(endpoint = "/issue/$issueId"))
+        val uri = encodeURI(endpoint = "/issue/$issueId")
+        val content = sendRequest(uri = uri)
+        if (content != null && this.cache != null) {
+            cache.insert(url = uri.toString(), response = content)
+        }
         return if (content != null) Utils.JSON_MAPPER.decodeFromString<Issue>(content) else null
     }
 

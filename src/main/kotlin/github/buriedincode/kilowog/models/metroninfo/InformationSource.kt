@@ -1,11 +1,14 @@
-package github.buriedincode.kilowog.models.metadata.enums
+package github.buriedincode.kilowog.models.metroninfo
 
 import github.buriedincode.kilowog.Utils.titleCase
 import kotlinx.serialization.SerialName
 
-enum class Source {
-    @SerialName("Comicvine")
-    COMICVINE,
+enum class InformationSource {
+    @SerialName("Comic Vine")
+    COMIC_VINE,
+
+    @SerialName("Grand Comics Database")
+    GRAND_COMICS_DATABASE,
 
     @SerialName("League of Comic Geeks")
     LEAGUE_OF_COMIC_GEEKS,

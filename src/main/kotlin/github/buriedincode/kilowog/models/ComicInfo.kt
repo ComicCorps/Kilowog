@@ -3,10 +3,11 @@ package github.buriedincode.kilowog.models
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
-import github.buriedincode.kilowog.models.comicinfo.enums.AgeRating
-import github.buriedincode.kilowog.models.comicinfo.enums.Manga
-import github.buriedincode.kilowog.models.comicinfo.enums.PageType
-import github.buriedincode.kilowog.models.comicinfo.enums.YesNo
+import github.buriedincode.kilowog.models.comicinfo.AgeRating
+import github.buriedincode.kilowog.models.comicinfo.Manga
+import github.buriedincode.kilowog.models.comicinfo.PageType
+import github.buriedincode.kilowog.models.comicinfo.YesNo
+import github.buriedincode.kilowog.models.metadata.Format
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -279,15 +280,14 @@ data class ComicInfo(
                 },
                 number = this.number,
                 pageCount = this.pageCount,
-                publisher = Metadata.Issue.Publisher(
-                    imprint = this.imprint,
-                    // Missing Resources
-                    title = this.publisher ?: "Missing Publisher title",
-                ),
                 // Missing Resources
                 series = Metadata.Issue.Series(
-                    format = this.format?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.enums.Format>()
-                        ?: github.buriedincode.kilowog.models.metadata.enums.Format.COMIC,
+                    format = this.format?.asEnumOrNull<Format>() ?: Format.COMIC,
+                    publisher = Metadata.Issue.Series.Publisher(
+                        imprint = this.imprint,
+                        // Missing Resources
+                        title = this.publisher ?: "Missing Publisher title",
+                    ),
                     // Missing Resources
                     startYear = if (this.volume != null && this.volume >= 1900) this.volume else null,
                     title = this.series ?: "Missing Series title",

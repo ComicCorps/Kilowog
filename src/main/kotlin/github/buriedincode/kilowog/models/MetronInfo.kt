@@ -3,12 +3,12 @@ package github.buriedincode.kilowog.models
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
-import github.buriedincode.kilowog.models.metroninfo.enums.AgeRating
-import github.buriedincode.kilowog.models.metroninfo.enums.Format
-import github.buriedincode.kilowog.models.metroninfo.enums.Genre
-import github.buriedincode.kilowog.models.metroninfo.enums.InformationSource
-import github.buriedincode.kilowog.models.metroninfo.enums.PageType
-import github.buriedincode.kilowog.models.metroninfo.enums.Role
+import github.buriedincode.kilowog.models.metroninfo.AgeRating
+import github.buriedincode.kilowog.models.metroninfo.Format
+import github.buriedincode.kilowog.models.metroninfo.Genre
+import github.buriedincode.kilowog.models.metroninfo.InformationSource
+import github.buriedincode.kilowog.models.metroninfo.PageType
+import github.buriedincode.kilowog.models.metroninfo.Role
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -18,7 +18,7 @@ import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import java.nio.file.Path
 import kotlin.io.path.writeText
-import github.buriedincode.kilowog.models.metadata.enums.Source as MetadataSource
+import github.buriedincode.kilowog.models.metadata.Source as MetadataSource
 
 @Serializable
 data class MetronInfo(
@@ -235,14 +235,6 @@ data class MetronInfo(
                 },
                 number = this.number,
                 pageCount = this.pageCount,
-                publisher = Metadata.Issue.Publisher(
-                    resources = listOfNotNull(
-                        source?.let {
-                            Metadata.Issue.Resource(source = it, value = publisher.id ?: return@let null)
-                        },
-                    ),
-                    title = this.publisher.value,
-                ),
                 resources = listOfNotNull(
                     source?.let {
                         this.id?.let { id ->
@@ -251,8 +243,16 @@ data class MetronInfo(
                     },
                 ),
                 series = Metadata.Issue.Series(
-                    format = this.series.format?.titleCase()?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.enums.Format>()
-                        ?: github.buriedincode.kilowog.models.metadata.enums.Format.COMIC,
+                    format = this.series.format?.titleCase()?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.Format>()
+                        ?: github.buriedincode.kilowog.models.metadata.Format.COMIC,
+                    publisher = Metadata.Issue.Series.Publisher(
+                        resources = listOfNotNull(
+                            source?.let {
+                                Metadata.Issue.Resource(source = it, value = publisher.id ?: return@let null)
+                            },
+                        ),
+                        title = this.publisher.value,
+                    ),
                     resources = listOfNotNull(
                         source?.let {
                             Metadata.Issue.Resource(source = it, value = series.id ?: return@let null)

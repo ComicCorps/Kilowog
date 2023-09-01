@@ -3,7 +3,7 @@ package github.buriedincode.kilowog.services
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
-import github.buriedincode.kilowog.models.metadata.enums.Source
+import github.buriedincode.kilowog.models.metadata.Source
 import github.buriedincode.kilowog.services.comicvine.issue.IssueEntry
 import github.buriedincode.kilowog.services.comicvine.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.comicvine.volume.VolumeEntry
@@ -26,9 +26,9 @@ class ComicvineTalker(settings: ComicvineSettings) {
     }
 
     private fun pullPublisher(metadata: Metadata): Int? {
-        var publisherId = metadata.issue.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
+        var publisherId = metadata.issue.series.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
         if (publisherId == null) {
-            var publisherTitle: String = metadata.issue.publisher.imprint ?: metadata.issue.publisher.title
+            var publisherTitle: String = metadata.issue.series.publisher.imprint ?: metadata.issue.series.publisher.title
             do {
                 val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
@@ -47,14 +47,13 @@ class ComicvineTalker(settings: ComicvineSettings) {
                 }
             } while (publisherId == null)
         } else {
-            Console.print("Found existing Publisher id")
             logger.info("Found existing Publisher id")
         }
         val publisher = this.comicvine.getPublisher(publisherId = publisherId) ?: return null
-        val resources = metadata.issue.publisher.resources.toMutableSet()
+        val resources = metadata.issue.series.publisher.resources.toMutableSet()
         resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = publisherId))
-        metadata.issue.publisher.resources = resources.toList()
-        metadata.issue.publisher.title = publisher.name
+        metadata.issue.series.publisher.resources = resources.toList()
+        metadata.issue.series.publisher.title = publisher.name
 
         return publisherId
     }
@@ -92,7 +91,6 @@ class ComicvineTalker(settings: ComicvineSettings) {
                 }
             } while (volumeId == null)
         } else {
-            Console.print("Found existing Volume id")
             logger.info("Found existing Volume id")
         }
         val volume = this.comicvine.getVolume(volumeId = volumeId) ?: return null
@@ -135,7 +133,6 @@ class ComicvineTalker(settings: ComicvineSettings) {
                 }
             } while (issueId == null)
         } else {
-            Console.print("Found existing Issue id")
             logger.info("Found existing Issue id")
         }
         val issue = this.comicvine.getIssue(issueId = issueId) ?: return null

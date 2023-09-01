@@ -34,7 +34,6 @@ import kotlin.io.path.relativeTo
 object App : Logging {
     fun convertCollection(directory: Path) {
         Utils.listFiles(directory, "cbr").forEach { srcFile ->
-            Console.print("Converting ${srcFile.name} to CBZ format")
             logger.info("Converting ${srcFile.name} to CBZ format")
             val tempDir = createTempDirectory(srcFile.nameWithoutExtension)
 
@@ -140,7 +139,6 @@ object App : Logging {
             }
             val newFilename = it.parent / (filename + "_${index.toString().padStart(length = padCount, padChar = '0')}." + it.extension)
             if (it.name != newFilename.name) {
-                Console.print("Renamed ${it.name} to ${newFilename.name}")
                 logger.info("Renamed ${it.name} to ${newFilename.name}")
                 it.moveTo(newFilename, overwrite = false)
             }
@@ -179,23 +177,23 @@ object App : Logging {
             comicvine = ComicvineTalker(settings = settings.comicvine)
         }
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
-            Console.print("Processing ${file.nameWithoutExtension}")
+            logger.info("Processing ${file.nameWithoutExtension}")
             val metadata = _metadata ?: Metadata(
                 issue = Metadata.Issue(
-                    publisher = Metadata.Issue.Publisher(
-                        title = Console.prompt(prompt = "Publisher title") ?: return@forEach,
-                    ),
                     series = Metadata.Issue.Series(
+                        publisher = Metadata.Issue.Series.Publisher(
+                            title = Console.prompt(prompt = "Publisher title") ?: return@forEach,
+                        ),
                         title = Console.prompt(prompt = "Series title") ?: return@forEach,
                     ),
                     number = Console.prompt(prompt = "Issue number") ?: return@forEach,
                 ),
             )
-            Console.print("Using Metron to look for information")
+            logger.info("Using Metron to look for information")
             var success = metron?.pullMetadata(metadata = metadata) ?: false
             if (!success) {
                 logger.warn("Unable to pull info from Metron")
-                Console.print("Using Comicvine to look for information")
+                logger.info("Using Comicvine to look for information")
                 success = comicvine?.pullMetadata(metadata = metadata) ?: false
             }
             if (!success) {
@@ -206,6 +204,7 @@ object App : Logging {
             val tempFile = file.parent / (file.name + ".temp")
             file.moveTo(target = tempFile)
             val filename = metadata.issue.getFilename()
+            logger.info("Processing pages")
             parsePages(folder = tempDir, metadata = metadata, filename = filename)
 
             metadata.toFile(tempDir / "Metadata.xml")
@@ -222,14 +221,11 @@ object App : Logging {
             .forEach { (file, metadata) ->
                 val newLocation = Paths.get(
                     settings.collectionFolder.pathString,
-                    metadata.issue.publisher.getFilename(),
+                    metadata.issue.series.publisher.getFilename(),
                     metadata.issue.series.getFilename(),
                     "${metadata.issue.getFilename()}.${file.extension}",
                 )
                 if (file != newLocation) {
-                    Console.print(
-                        "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
-                    )
                     logger.info(
                         "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
                     )
