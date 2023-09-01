@@ -72,10 +72,10 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("Metadata config is invalid: ${mfe.message}")
+            logger.error("${archiveFile.name} contains an invalid Metadata file: ${mfe.message}")
             null
         } catch (se: SerializationException) {
-            logger.error("Metadata config is invalid: ${se.message}")
+            logger.error("${archiveFile.name} contains an invalid Metadata file: ${se.message}")
             null
         }
     }
@@ -87,10 +87,10 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("MetronInfo config is invalid: ${mfe.message}")
+            logger.error("${archiveFile.name} contains an imvalid MetronInfo file: ${mfe.message}")
             null
         } catch (se: SerializationException) {
-            logger.error("MetronInfo config is invalid: ${se.message}")
+            logger.error("${archiveFile.name} contains an invalid MetronInfo file: ${se.message}")
             null
         }
     }
@@ -102,10 +102,10 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("ComicInfo config is invalid: ${mfe.message}")
+            logger.error("${archiveFile.name} contains an invalid ComicInfo file: ${mfe.message}")
             null
         } catch (se: SerializationException) {
-            logger.error("ComicInfo config is invalid: ${se.message}")
+            logger.error("${archiveFile.name} contains an invalid ComicInfo file: ${se.message}")
             null
         }
     }

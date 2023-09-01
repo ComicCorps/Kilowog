@@ -133,9 +133,8 @@ data class Metadata(
             }
 
             fun getFilename(): String {
-                var output = if (volume == 1) title else "$title v$volume"
-                output += "_($format)"
-                return Utils.sanitize(output)
+                val seriesTitle = if (volume == 1) title else "$title v$volume"
+                return Utils.sanitize(seriesTitle)
             }
         }
 
