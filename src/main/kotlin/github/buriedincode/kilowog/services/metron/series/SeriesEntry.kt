@@ -12,11 +12,10 @@ data class SeriesEntry(
     @JsonNames("modified")
     @Serializable(with = OffsetDateTimeSerializer::class)
     val dateModified: LocalDateTime,
+    val id: Long,
     var issueCount: Int,
     @JsonNames("series")
     var name: String,
-    @JsonNames("id")
-    val seriesId: Int,
     var yearBegan: Int,
 ) : Comparable<SeriesEntry> {
     companion object {

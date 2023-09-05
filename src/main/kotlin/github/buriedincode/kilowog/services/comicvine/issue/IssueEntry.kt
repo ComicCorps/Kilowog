@@ -24,8 +24,7 @@ data class IssueEntry(
     val dateLastUpdated: LocalDateTime,
     val description: String? = null,
     val hasStaffReview: Boolean,
-    @JsonNames("id")
-    val issueId: Int,
+    val id: Long,
     val image: Image,
     val name: String? = null,
     @JsonNames("issue_number")

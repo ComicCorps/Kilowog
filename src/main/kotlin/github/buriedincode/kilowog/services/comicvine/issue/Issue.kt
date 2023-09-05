@@ -2,7 +2,6 @@ package github.buriedincode.kilowog.services.comicvine.issue
 
 import github.buriedincode.kilowog.LocalDateTimeSerializer
 import github.buriedincode.kilowog.services.comicvine.AssociatedImage
-import github.buriedincode.kilowog.services.comicvine.CreatorEntry
 import github.buriedincode.kilowog.services.comicvine.GenericEntry
 import github.buriedincode.kilowog.services.comicvine.Image
 import kotlinx.datetime.LocalDate
@@ -25,8 +24,7 @@ data class Issue(
     val dateLastUpdated: LocalDateTime,
     val description: String? = null,
     val hasStaffReview: Boolean,
-    @JsonNames("id")
-    val issueId: Int,
+    val id: Long,
     val image: Image,
     val name: String? = null,
     @JsonNames("issue_number")
@@ -62,4 +60,16 @@ data class Issue(
     val teams: List<GenericEntry> = emptyList(),
     @JsonNames("team_disbanded_in")
     val teamsDisbanded: List<GenericEntry> = emptyList(),
-)
+) {
+    @Serializable
+    data class CreatorEntry(
+        @JsonNames("api_detail_url")
+        val apiUrl: String,
+        val id: Long,
+        val name: String? = null,
+        @JsonNames("site_detail_url")
+        val siteUrl: String? = null,
+        @JsonNames("role")
+        val roles: String,
+    )
+}

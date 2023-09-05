@@ -93,13 +93,13 @@ data class MetronInfo(
         @XmlElement(false)
         val source: InformationSource,
         @XmlValue
-        val value: Int,
+        val value: Long,
     )
 
     @Serializable
     data class Resource(
         @XmlElement(false)
-        val id: Int? = null,
+        val id: Long? = null,
         @XmlValue
         val value: String,
     )
@@ -109,7 +109,7 @@ data class MetronInfo(
         @XmlSerialName("Format")
         val format: Format? = null,
         @XmlElement(false)
-        val id: Int? = null,
+        val id: Long? = null,
         @XmlElement(false)
         val lang: String = "en",
         @XmlSerialName("Name")
@@ -131,7 +131,7 @@ data class MetronInfo(
     @Serializable
     data class GenreResource(
         @XmlElement(false)
-        val id: Int? = null,
+        val id: Long? = null,
         @XmlValue
         val value: Genre,
     )
@@ -139,7 +139,7 @@ data class MetronInfo(
     @Serializable
     data class Arc(
         @XmlElement(false)
-        val id: Int? = null,
+        val id: Long? = null,
         @XmlSerialName("Name")
         val name: String,
         @XmlSerialName("Number")
@@ -166,7 +166,7 @@ data class MetronInfo(
     @Serializable
     data class RoleResource(
         @XmlElement(false)
-        val id: Int? = null,
+        val id: Long? = null,
         @XmlValue
         val value: Role,
     )
@@ -290,7 +290,7 @@ data class MetronInfo(
             pages = this.pages.map {
                 Metadata.Page(
                     doublePage = it.doublePage,
-                    filename = "",
+                    filename = "Missing Page filename",
                     fileSize = it.imageSize ?: 0L,
                     imageHeight = it.imageHeight ?: 0,
                     imageWidth = it.imageWidth ?: 0,

@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class AssociatedImage(
     val caption: String? = null,
-    val id: Int,
+    val id: Long,
     val originalUrl: String,
     @JsonNames("image_tags")
     val tags: String? = null,

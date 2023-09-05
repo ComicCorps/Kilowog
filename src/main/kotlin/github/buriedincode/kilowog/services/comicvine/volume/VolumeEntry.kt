@@ -22,6 +22,7 @@ data class VolumeEntry(
     val dateLastUpdated: LocalDateTime,
     val description: String? = null,
     val firstIssue: IssueEntry? = null,
+    val id: Long,
     val image: Image,
     @JsonNames("count_of_issues")
     val issueCount: Int,
@@ -34,8 +35,6 @@ data class VolumeEntry(
     val startYear: Int? = null,
     @JsonNames("deck")
     val summary: String? = null,
-    @JsonNames("id")
-    val volumeId: Int,
 ) : Comparable<VolumeEntry> {
     companion object {
         private val comparator = compareBy(VolumeEntry::name).thenBy { it.startYear }

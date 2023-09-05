@@ -6,35 +6,10 @@ import kotlinx.serialization.json.JsonNames
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class CountEntry(
-    @JsonNames("api_detail_url")
-    val apiUrl: String,
-    val id: Int,
-    val name: String? = null,
-    @JsonNames("site_detail_url")
-    val siteUrl: String? = null,
-    val count: Int,
-)
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
-data class CreatorEntry(
-    @JsonNames("api_detail_url")
-    val apiUrl: String,
-    val id: Int,
-    val name: String? = null,
-    @JsonNames("site_detail_url")
-    val siteUrl: String? = null,
-    @JsonNames("role")
-    val roles: String,
-)
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
 data class GenericEntry(
     @JsonNames("api_detail_url")
     val apiUrl: String,
-    val id: Int,
+    val id: Long,
     val name: String? = null,
     @JsonNames("site_detail_url")
     val siteUrl: String? = null,
@@ -45,7 +20,7 @@ data class GenericEntry(
 data class IssueEntry(
     @JsonNames("api_detail_url")
     val apiUrl: String,
-    val id: Int,
+    val id: Long,
     val name: String? = null,
     @JsonNames("site_detail_url")
     val siteUrl: String? = null,

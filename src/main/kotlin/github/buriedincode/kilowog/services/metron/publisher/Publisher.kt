@@ -10,17 +10,16 @@ import java.time.LocalDateTime
 @Serializable
 data class Publisher(
     @JsonNames("cv_id")
-    val comicvineId: Int? = null,
+    val comicvineId: Long? = null,
     @JsonNames("modified")
     @Serializable(with = OffsetDateTimeSerializer::class)
     val dateModified: LocalDateTime,
     @JsonNames("desc")
     val description: String? = null,
     val founded: Int,
+    val id: Long,
     @JsonNames("image")
     val imageUrl: String,
     val name: String,
-    @JsonNames("id")
-    val publisherId: Int,
     val resourceUrl: String,
 )

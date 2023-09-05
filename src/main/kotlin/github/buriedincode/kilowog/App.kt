@@ -16,11 +16,9 @@ import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.zip.ZipFile
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.extension
@@ -46,29 +44,13 @@ object App : Logging {
         }
     }
 
-    private fun readInfoFile(archiveFile: File, infoFile: String): String? {
-        val tempFile = createTempFile(prefix = "${archiveFile.name}_${infoFile}_", suffix = ".xml").toFile()
-        tempFile.deleteOnExit()
-
-        if (archiveFile.extension == "cbz") {
-            val zip = ZipFile(archiveFile)
-            val entry = zip.getEntry("/$infoFile.xml") ?: zip.getEntry("$infoFile.xml") ?: return null
-            zip.getInputStream(entry).use { input ->
-                tempFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-            zip.close()
-        } else {
-            return null
-        }
-        return tempFile.readText()
-    }
-
     @OptIn(ExperimentalSerializationApi::class)
-    fun readMetadata(archiveFile: File): Metadata? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "Metadata")
-            ?: return null
+    fun readMetadata(archiveFile: Path): Metadata? {
+        val content = ZipUtils.extractFile(
+            srcFile = archiveFile,
+            filename = "Metadata",
+            extension = "xml",
+        )?.toFile()?.readText() ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<Metadata>(content)
         } catch (mfe: MissingFieldException) {
@@ -81,9 +63,12 @@ object App : Logging {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun readMetronInfo(archiveFile: File): MetronInfo? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "MetronInfo")
-            ?: return null
+    fun readMetronInfo(archiveFile: Path): MetronInfo? {
+        val content = ZipUtils.extractFile(
+            srcFile = archiveFile,
+            filename = "MetronInfo",
+            extension = "xml",
+        )?.toFile()?.readText() ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (mfe: MissingFieldException) {
@@ -96,9 +81,12 @@ object App : Logging {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun readComicInfo(archiveFile: File): ComicInfo? {
-        val content = readInfoFile(archiveFile = archiveFile, infoFile = "ComicInfo")
-            ?: return null
+    fun readComicInfo(archiveFile: Path): ComicInfo? {
+        val content = ZipUtils.extractFile(
+            srcFile = archiveFile,
+            filename = "ComicInfo",
+            extension = "xml",
+        )?.toFile()?.readText() ?: return null
         return try {
             Utils.XML_MAPPER.decodeFromString<ComicInfo>(content)
         } catch (mfe: MissingFieldException) {
@@ -113,9 +101,9 @@ object App : Logging {
     fun readCollection(directory: Path): Map<Path, Metadata?> {
         val files = Utils.listFiles(directory, "cbz")
         return files.associateWith {
-            readMetadata(archiveFile = it.toFile())
-                ?: readMetronInfo(archiveFile = it.toFile())?.toMetadata()
-                ?: readComicInfo(archiveFile = it.toFile())?.toMetadata()
+            readMetadata(archiveFile = it)
+                ?: readMetronInfo(archiveFile = it)?.toMetadata()
+                ?: readComicInfo(archiveFile = it)?.toMetadata()
         }
     }
 

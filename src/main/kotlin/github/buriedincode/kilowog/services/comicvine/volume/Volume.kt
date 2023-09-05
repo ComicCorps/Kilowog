@@ -1,7 +1,6 @@
 package github.buriedincode.kilowog.services.comicvine.volume
 
 import github.buriedincode.kilowog.LocalDateTimeSerializer
-import github.buriedincode.kilowog.services.comicvine.CountEntry
 import github.buriedincode.kilowog.services.comicvine.GenericEntry
 import github.buriedincode.kilowog.services.comicvine.Image
 import github.buriedincode.kilowog.services.comicvine.IssueEntry
@@ -22,6 +21,7 @@ data class Volume(
     val dateLastUpdated: LocalDateTime,
     val description: String? = null,
     val firstIssue: IssueEntry? = null,
+    val id: Long,
     val image: Image,
     @JsonNames("count_of_issues")
     val issueCount: Int,
@@ -33,8 +33,6 @@ data class Volume(
     val startYear: Int? = null,
     @JsonNames("deck")
     val summary: String? = null,
-    @JsonNames("id")
-    val volumeId: Int,
     val characters: List<CountEntry> = emptyList(),
     val concepts: List<CountEntry> = emptyList(),
     @JsonNames("people")
@@ -42,4 +40,15 @@ data class Volume(
     val issues: List<IssueEntry> = emptyList(),
     val locations: List<CountEntry> = emptyList(),
     val objects: List<CountEntry> = emptyList(),
-)
+) {
+    @Serializable
+    data class CountEntry(
+        @JsonNames("api_detail_url")
+        val apiUrl: String,
+        val id: Long,
+        val name: String? = null,
+        @JsonNames("site_detail_url")
+        val siteUrl: String? = null,
+        val count: Int,
+    )
+}

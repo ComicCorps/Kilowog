@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 @Serializable
 data class Issue(
     @JsonNames("cv_id")
-    val comicvineId: Int? = null,
+    val comicvineId: Long? = null,
     val coverDate: LocalDate,
     val coverHash: String,
     val characters: List<DatedResource> = emptyList(),
@@ -21,11 +21,10 @@ data class Issue(
     val dateModified: LocalDateTime,
     @JsonNames("desc")
     val description: String? = null,
+    val id: Long,
     @JsonNames("image")
     val imageUrl: String,
     val isbn: String? = null,
-    @JsonNames("id")
-    val issueId: Int,
     @JsonNames("name")
     val names: List<String> = emptyList(),
     val number: String,
@@ -48,7 +47,7 @@ data class Issue(
 ) {
     @Serializable
     data class Resource(
-        val id: Int,
+        val id: Long,
         val name: String,
     )
 
@@ -57,14 +56,14 @@ data class Issue(
         @JsonNames("modified")
         @Serializable(with = OffsetDateTimeSerializer::class)
         val dateModified: LocalDateTime,
-        val id: Int,
+        val id: Long,
         val name: String,
     )
 
     @Serializable
     data class Series(
         val genres: List<Resource> = emptyList(),
-        val id: Int,
+        val id: Long,
         val name: String,
         val seriesType: Resource,
         val sortName: String,
@@ -74,14 +73,14 @@ data class Issue(
     @Serializable
     data class Credit(
         val creator: String,
-        val id: Int,
+        val id: Long,
         @JsonNames("role")
         val roles: List<Resource> = emptyList(),
     )
 
     @Serializable
     data class Reprint(
-        val id: Int,
+        val id: Long,
         @JsonNames("issue")
         val name: String,
     )

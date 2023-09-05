@@ -83,7 +83,7 @@ data class Metadata(
             @XmlElement(false)
             var source: Source,
             @XmlValue
-            var value: Int,
+            var value: Long,
         ) {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -132,10 +132,7 @@ data class Metadata(
                 fun getFilename(): String = Utils.sanitize(if (imprint == null) title else "$title ($imprint)")
             }
 
-            fun getFilename(): String {
-                val seriesTitle = if (volume == 1) title else "$title v$volume"
-                return Utils.sanitize(seriesTitle)
-            }
+            fun getFilename(): String = Utils.sanitize(if (volume == 1) title else "$title v$volume")
         }
 
         @Serializable

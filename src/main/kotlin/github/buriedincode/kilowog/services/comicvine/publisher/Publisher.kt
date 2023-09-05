@@ -19,13 +19,12 @@ data class Publisher(
     @Serializable(with = LocalDateTimeSerializer::class)
     val dateLastUpdated: LocalDateTime,
     val description: String? = null,
+    val id: Long,
     val image: Image,
     val locationAddress: String? = null,
     val locationCity: String? = null,
     val locationState: String? = null,
     val name: String,
-    @JsonNames("id")
-    val publisherId: Int,
     @JsonNames("site_detail_url")
     val siteUrl: String,
     @JsonNames("deck")

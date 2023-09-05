@@ -7,13 +7,30 @@ import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.div
 import kotlin.io.path.inputStream
+import kotlin.io.path.name
 import kotlin.io.path.pathString
 
 object ZipUtils {
+    fun extractFile(srcFile: Path, filename: String, extension: String): Path? {
+        val tempFile = kotlin.io.path.createTempFile(prefix = "${srcFile.name}_${filename}_", suffix = ".$extension").toFile()
+        tempFile.deleteOnExit()
+
+        val zip = ZipFile(srcFile.toFile())
+        val entry = zip.getEntry("/$filename.$extension") ?: zip.getEntry("$filename.$extension") ?: return null
+        zip.getInputStream(entry).use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        zip.close()
+        return tempFile.toPath()
+    }
+
     fun unzip(srcFile: Path, destFolder: Path) {
         ZipInputStream(srcFile.inputStream()).use { `in` ->
             var ze: ZipEntry?

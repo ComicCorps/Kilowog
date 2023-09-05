@@ -28,13 +28,13 @@ class MetronTalker(settings: MetronSettings) {
         return publishers
     }
 
-    private fun pullPublisher(metadata: Metadata): Int? {
+    private fun pullPublisher(metadata: Metadata): Long? {
         var publisherId = metadata.issue.series.publisher.resources.firstOrNull { it.source == Source.METRON }?.value
         if (publisherId == null) {
             val comicvineId = metadata.issue.series.publisher.resources.firstOrNull { it.source == Source.COMICVINE }?.value
             if (comicvineId != null) {
                 val tempPublisher = this.metron.getPublisherByComicvine(comicvineId = comicvineId)
-                publisherId = tempPublisher?.publisherId
+                publisherId = tempPublisher?.id
             }
         }
         if (publisherId == null) {
@@ -42,7 +42,7 @@ class MetronTalker(settings: MetronSettings) {
             do {
                 val publishers = this.searchPublishers(title = publisherTitle).sorted()
                 val index = Console.menu(
-                    choices = publishers.map { "${it.publisherId} | ${it.name}" },
+                    choices = publishers.map { "${it.id} | ${it.name}" },
                     prompt = "Select Metron Publisher",
                     default = "None of the Above",
                 )
@@ -53,7 +53,7 @@ class MetronTalker(settings: MetronSettings) {
                         return null
                     }
                 } else {
-                    publisherId = publishers[index - 1].publisherId
+                    publisherId = publishers[index - 1].id
                 }
             } while (publisherId == null)
         } else {
@@ -71,7 +71,7 @@ class MetronTalker(settings: MetronSettings) {
         return publisherId
     }
 
-    private fun searchSeries(publisherId: Int, title: String, volume: Int? = null, startYear: Int? = null): List<SeriesEntry> {
+    private fun searchSeries(publisherId: Long, title: String, volume: Int? = null, startYear: Int? = null): List<SeriesEntry> {
         val seriesList = this.metron.listSeries(publisherId = publisherId, title = title, volume = volume, startYear = startYear)
         if (seriesList.isEmpty()) {
             logger.warn(
@@ -82,13 +82,13 @@ class MetronTalker(settings: MetronSettings) {
         return seriesList
     }
 
-    private fun pullSeries(metadata: Metadata, publisherId: Int): Int? {
+    private fun pullSeries(metadata: Metadata, publisherId: Long): Long? {
         var seriesId = metadata.issue.series.resources.firstOrNull { it.source == Source.METRON }?.value
         if (seriesId == null) {
             val comicvineId = metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value
             if (comicvineId != null) {
                 val tempSeries = this.metron.getSeriesByComicvine(comicvineId = comicvineId)
-                seriesId = tempSeries?.seriesId
+                seriesId = tempSeries?.id
             }
         }
         if (seriesId == null) {
@@ -103,7 +103,7 @@ class MetronTalker(settings: MetronSettings) {
                     startYear = seriesStartYear,
                 ).sorted()
                 val index = Console.menu(
-                    choices = seriesList.map { "${it.seriesId} | ${it.name}" },
+                    choices = seriesList.map { "${it.id} | ${it.name}" },
                     prompt = "Select Metron Series",
                     default = "None of the Above",
                 )
@@ -118,7 +118,7 @@ class MetronTalker(settings: MetronSettings) {
                         return null
                     }
                 } else {
-                    seriesId = seriesList[index - 1].seriesId
+                    seriesId = seriesList[index - 1].id
                 }
             } while (seriesId == null)
         } else {
@@ -143,7 +143,7 @@ class MetronTalker(settings: MetronSettings) {
         return seriesId
     }
 
-    private fun searchIssue(seriesId: Int, number: String? = null): List<IssueEntry> {
+    private fun searchIssue(seriesId: Long, number: String? = null): List<IssueEntry> {
         val issues = this.metron.listIssues(seriesId = seriesId, number = number)
         if (issues.isEmpty()) {
             logger.warn("No issues found with query {\"seriesId\": $seriesId, \"number\": $number}")
@@ -151,13 +151,13 @@ class MetronTalker(settings: MetronSettings) {
         return issues
     }
 
-    private fun pullIssue(metadata: Metadata, seriesId: Int): Int? {
+    private fun pullIssue(metadata: Metadata, seriesId: Long): Long? {
         var issueId = metadata.issue.resources.firstOrNull { it.source == Source.METRON }?.value
         if (issueId == null) {
             val comicvineId = metadata.issue.resources.firstOrNull { it.source == Source.COMICVINE }?.value
             if (comicvineId != null) {
                 val tempIssue = this.metron.getIssueByComicvine(comicvineId = comicvineId)
-                issueId = tempIssue?.issueId
+                issueId = tempIssue?.id
             }
         }
         if (issueId == null) {
@@ -165,7 +165,7 @@ class MetronTalker(settings: MetronSettings) {
             do {
                 val issues = this.searchIssue(seriesId = seriesId, number = issueNumber).sorted()
                 val index = Console.menu(
-                    choices = issues.map { "${it.issueId} | ${it.number} - ${it.name}" },
+                    choices = issues.map { "${it.id} | ${it.number} - ${it.name}" },
                     prompt = "Select Metron Issue",
                     default = "None of the Above",
                 )
@@ -176,7 +176,7 @@ class MetronTalker(settings: MetronSettings) {
                         return null
                     }
                 } else {
-                    issueId = issues[index - 1].issueId
+                    issueId = issues[index - 1].id
                 }
             } while (issueId == null)
         } else {

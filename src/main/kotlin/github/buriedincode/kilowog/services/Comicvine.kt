@@ -98,7 +98,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         return results
     }
 
-    fun getPublisher(publisherId: Int): Publisher? {
+    fun getPublisher(publisherId: Long): Publisher? {
         val uri = encodeURI(endpoint = "/publisher/${Resource.PUBLISHER.resourceId}-$publisherId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {
@@ -109,7 +109,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     @JvmOverloads
-    fun listVolumes(publisherId: Int, title: String? = null, startYear: Int? = null, page: Int = 1): List<VolumeEntry> {
+    fun listVolumes(publisherId: Long, title: String? = null, startYear: Int? = null, page: Int = 1): List<VolumeEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
@@ -133,7 +133,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         return results
     }
 
-    fun getVolume(volumeId: Int): Volume? {
+    fun getVolume(volumeId: Long): Volume? {
         val uri = encodeURI(endpoint = "/volume/${Resource.VOLUME.resourceId}-$volumeId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {
@@ -144,7 +144,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     @JvmOverloads
-    fun listIssues(volumeId: Int, number: String? = null, page: Int = 1): List<IssueEntry> {
+    fun listIssues(volumeId: Long, number: String? = null, page: Int = 1): List<IssueEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
@@ -166,7 +166,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         return results
     }
 
-    fun getIssue(issueId: Int): Issue? {
+    fun getIssue(issueId: Long): Issue? {
         val uri = encodeURI(endpoint = "/issue/${Resource.ISSUE.resourceId}-$issueId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {

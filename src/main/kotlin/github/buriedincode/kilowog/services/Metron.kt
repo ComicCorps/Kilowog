@@ -98,7 +98,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results
     }
 
-    fun getPublisherByComicvine(comicvineId: Int): PublisherEntry? {
+    fun getPublisherByComicvine(comicvineId: Long): PublisherEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/publisher", params = params)
         val content = sendRequest(uri = uri)
@@ -110,7 +110,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results.firstOrNull()
     }
 
-    fun getPublisher(publisherId: Int): Publisher? {
+    fun getPublisher(publisherId: Long): Publisher? {
         val uri = encodeURI(endpoint = "/publisher/$publisherId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {
@@ -120,7 +120,13 @@ data class Metron(private val username: String, private val password: String, pr
     }
 
     @JvmOverloads
-    fun listSeries(publisherId: Int, title: String? = null, volume: Int? = null, startYear: Int? = null, page: Int = 1): List<SeriesEntry> {
+    fun listSeries(
+        publisherId: Long,
+        title: String? = null,
+        volume: Int? = null,
+        startYear: Int? = null,
+        page: Int = 1,
+    ): List<SeriesEntry> {
         val params = HashMap<String, String>()
         params["publisher_id"] = publisherId.toString()
         params["page"] = page.toString()
@@ -146,7 +152,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results
     }
 
-    fun getSeriesByComicvine(comicvineId: Int): SeriesEntry? {
+    fun getSeriesByComicvine(comicvineId: Long): SeriesEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/series", params = params)
         val content = sendRequest(uri = uri)
@@ -158,7 +164,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results.firstOrNull()
     }
 
-    fun getSeries(seriesId: Int): Series? {
+    fun getSeries(seriesId: Long): Series? {
         val uri = encodeURI(endpoint = "/series/$seriesId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {
@@ -168,7 +174,7 @@ data class Metron(private val username: String, private val password: String, pr
     }
 
     @JvmOverloads
-    fun listIssues(seriesId: Int, number: String? = null, page: Int = 1): List<IssueEntry> {
+    fun listIssues(seriesId: Long, number: String? = null, page: Int = 1): List<IssueEntry> {
         val params = HashMap<String, String>()
         params["series_id"] = seriesId.toString()
         params["page"] = page.toString()
@@ -188,7 +194,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results
     }
 
-    fun getIssueByComicvine(comicvineId: Int): IssueEntry? {
+    fun getIssueByComicvine(comicvineId: Long): IssueEntry? {
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/issue", params = params)
         val content = sendRequest(uri = uri)
@@ -200,7 +206,7 @@ data class Metron(private val username: String, private val password: String, pr
         return results.firstOrNull()
     }
 
-    fun getIssue(issueId: Int): Issue? {
+    fun getIssue(issueId: Long): Issue? {
         val uri = encodeURI(endpoint = "/issue/$issueId")
         val content = sendRequest(uri = uri)
         if (content != null && this.cache != null) {

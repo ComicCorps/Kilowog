@@ -15,10 +15,9 @@ data class IssueEntry(
     @JsonNames("modified")
     @Serializable(with = OffsetDateTimeSerializer::class)
     val dateModified: LocalDateTime,
+    val id: Long,
     @JsonNames("image")
     val imageUrl: String,
-    @JsonNames("id")
-    val issueId: Int,
     val series: Series,
     @JsonNames("issue")
     val name: String,

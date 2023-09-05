@@ -12,9 +12,8 @@ data class PublisherEntry(
     @JsonNames("modified")
     @Serializable(with = OffsetDateTimeSerializer::class)
     val dateModified: LocalDateTime,
+    val id: Long,
     val name: String,
-    @JsonNames("id")
-    val publisherId: Int,
 ) : Comparable<PublisherEntry> {
     companion object {
         private val comparator = compareBy(PublisherEntry::name)
