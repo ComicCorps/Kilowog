@@ -112,7 +112,7 @@ data class ComicInfo(
         @XmlElement(false)
         val doublePage: Boolean = false,
         @XmlElement(false)
-        val image: Int,
+        val image: Int? = null,
         @XmlElement(false)
         val imageHeight: Int? = null,
         @XmlElement(false)
@@ -304,14 +304,14 @@ data class ComicInfo(
                 title = this.title,
             ),
             notes = this.notes,
-            pages = this.pages.map {
+            pages = this.pages.mapNotNull {
                 Metadata.Page(
                     doublePage = it.doublePage,
                     filename = "Missing Page filename",
                     fileSize = it.imageSize ?: 0L,
                     imageHeight = it.imageHeight ?: 0,
                     imageWidth = it.imageWidth ?: 0,
-                    index = it.image,
+                    index = it.image ?: return@mapNotNull null,
                     type = it.type.titleCase(),
                 )
             },

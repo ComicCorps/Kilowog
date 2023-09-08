@@ -19,7 +19,6 @@ import java.nio.file.Paths
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.fileSize
@@ -59,6 +58,9 @@ object App : Logging {
         } catch (se: SerializationException) {
             logger.error("${archiveFile.name} contains an invalid Metadata file: ${se.message}")
             null
+        } catch (nfe: NumberFormatException) {
+            logger.error("${archiveFile.name} contains an invalid Metadata file: ${nfe.message}")
+            null
         }
     }
 
@@ -72,10 +74,13 @@ object App : Logging {
         return try {
             Utils.XML_MAPPER.decodeFromString<MetronInfo>(content)
         } catch (mfe: MissingFieldException) {
-            logger.error("${archiveFile.name} contains an imvalid MetronInfo file: ${mfe.message}")
+            logger.error("${archiveFile.name} contains an invalid MetronInfo file: ${mfe.message}")
             null
         } catch (se: SerializationException) {
             logger.error("${archiveFile.name} contains an invalid MetronInfo file: ${se.message}")
+            null
+        } catch (nfe: NumberFormatException) {
+            logger.error("${archiveFile.name} contains an invalid MetronInfo file: ${nfe.message}")
             null
         }
     }
@@ -94,6 +99,9 @@ object App : Logging {
             null
         } catch (se: SerializationException) {
             logger.error("${archiveFile.name} contains an invalid ComicInfo file: ${se.message}")
+            null
+        } catch (nfe: NumberFormatException) {
+            logger.error("${archiveFile.name} contains an invalid ComicInfo file: ${nfe.message}")
             null
         }
     }
