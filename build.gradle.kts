@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "github.buriedincode"
-version = "0.1.0"
+version = "0.1.1"
 
 println("Kilowog v$version")
 println("Kotlin v${KotlinVersion.CURRENT}")
