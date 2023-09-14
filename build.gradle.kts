@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.10"
     application
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
-    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.github.ben-manes.versions") version "0.48.0"
 }
 
 group = "github.buriedincode"
@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
-    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
+    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.1")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.0")
     runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.0.0")
 
@@ -34,7 +34,7 @@ dependencies {
     implementation("com.sksamuel.hoplite", "hoplite-yaml", hopliteVersion)
 
     // XmlUtil
-    val xmlutilVersion = "0.86.1"
+    val xmlutilVersion = "0.86.2"
     implementation("io.github.pdvrieze.xmlutil", "core-jvm", xmlutilVersion)
     implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilVersion)
 
