@@ -23,8 +23,13 @@ import java.util.stream.Collectors
 
 data class Comicvine(private val apiKey: String, private val cache: SQLiteCache? = null) {
     constructor(apiKey: Secret, cache: SQLiteCache? = null) : this(apiKey = apiKey.value, cache = cache)
+
     private val regex = "api_key=(.+?)&".toRegex()
-    private fun encodeURI(endpoint: String, params: MutableMap<String, String> = HashMap()): URI {
+
+    private fun encodeURI(
+        endpoint: String,
+        params: MutableMap<String, String> = HashMap(),
+    ): URI {
         params["api_key"] = apiKey
         params["format"] = "json"
         val encodedUrl = params.keys
@@ -78,7 +83,10 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     @JvmOverloads
-    fun listPublishers(title: String? = null, page: Int = 1): List<PublisherEntry> {
+    fun listPublishers(
+        title: String? = null,
+        page: Int = 1,
+    ): List<PublisherEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
@@ -109,7 +117,12 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     @JvmOverloads
-    fun listVolumes(publisherId: Long, title: String? = null, startYear: Int? = null, page: Int = 1): List<VolumeEntry> {
+    fun listVolumes(
+        publisherId: Long,
+        title: String? = null,
+        startYear: Int? = null,
+        page: Int = 1,
+    ): List<VolumeEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()
@@ -144,7 +157,11 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
     }
 
     @JvmOverloads
-    fun listIssues(volumeId: Long, number: String? = null, page: Int = 1): List<IssueEntry> {
+    fun listIssues(
+        volumeId: Long,
+        number: String? = null,
+        page: Int = 1,
+    ): List<IssueEntry> {
         val params = HashMap<String, String>()
         params["limit"] = PAGE_LIMIT.toString()
         params["offset"] = ((page - 1) * PAGE_LIMIT).toString()

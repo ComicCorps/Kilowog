@@ -47,7 +47,10 @@ data class SQLiteCache(val path: Path, val expiry: Int? = null) {
         }
     }
 
-    fun insert(url: String, response: String) {
+    fun insert(
+        url: String,
+        response: String,
+    ) {
         val query = "INSERT INTO queries (url, response, query_date) VALUES (?, ?, ?);"
         DriverManager.getConnection(this.databaseUrl).use {
             it.prepareStatement(query).use {

@@ -115,7 +115,11 @@ object App : Logging {
         }
     }
 
-    private fun parsePages(folder: Path, metadata: Metadata, filename: String) {
+    private fun parsePages(
+        folder: Path,
+        metadata: Metadata,
+        filename: String,
+    ) {
         val imageList = Utils.listFiles(path = folder).sorted()
         imageList.filterNot { it.extension == "xml" || it.extension == "json" }.forEachIndexed { index, it ->
             val padCount = imageList.size.toString().length

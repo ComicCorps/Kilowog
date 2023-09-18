@@ -58,7 +58,11 @@ class ComicvineTalker(settings: ComicvineSettings) {
         return publisherId
     }
 
-    private fun searchVolumes(publisherId: Long, title: String, startYear: Int? = null): List<VolumeEntry> {
+    private fun searchVolumes(
+        publisherId: Long,
+        title: String,
+        startYear: Int? = null,
+    ): List<VolumeEntry> {
         val volumes = this.comicvine.listVolumes(publisherId = publisherId, title = title, startYear = startYear)
         if (volumes.isEmpty()) {
             logger.warn("No volumes found with query {\"publisherId\": $publisherId, \"title\": $title, \"startYear\": $startYear}")
@@ -66,7 +70,10 @@ class ComicvineTalker(settings: ComicvineSettings) {
         return volumes
     }
 
-    private fun pullSeries(metadata: Metadata, publisherId: Long): Long? {
+    private fun pullSeries(
+        metadata: Metadata,
+        publisherId: Long,
+    ): Long? {
         var volumeId = metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value
         if (volumeId == null) {
             var volumeTitle: String = metadata.issue.series.title
@@ -103,7 +110,10 @@ class ComicvineTalker(settings: ComicvineSettings) {
         return volumeId
     }
 
-    private fun searchIssues(volumeId: Long, number: String?): List<IssueEntry> {
+    private fun searchIssues(
+        volumeId: Long,
+        number: String?,
+    ): List<IssueEntry> {
         val issues = this.comicvine.listIssues(volumeId = volumeId, number = number)
         if (issues.isEmpty()) {
             logger.warn("No issues found with query {\"volumeId\": $volumeId, \"number\": $number}")
@@ -111,7 +121,10 @@ class ComicvineTalker(settings: ComicvineSettings) {
         return issues
     }
 
-    private fun pullIssue(metadata: Metadata, seriesId: Long): Long? {
+    private fun pullIssue(
+        metadata: Metadata,
+        seriesId: Long,
+    ): Long? {
         var issueId = metadata.issue.resources.firstOrNull { it.source == Source.COMICVINE }?.value
         if (issueId == null) {
             var issueNumber: String? = metadata.issue.number

@@ -8,13 +8,19 @@ internal object Console : Logging {
     private val PROMPT: Colour = Colour.CYAN
     private val STANDARD: Colour = Colour.WHITE
 
-    internal fun title(value: String, colour: Colour = HEADING) {
+    internal fun title(
+        value: String,
+        colour: Colour = HEADING,
+    ) {
         colourOutput(value = "=".repeat(value.length + 4), colour = colour)
         heading(value = value, colour = colour)
         colourOutput(value = "=".repeat(value.length + 4), colour = colour)
     }
 
-    internal fun heading(value: String, colour: Colour = HEADING) {
+    internal fun heading(
+        value: String,
+        colour: Colour = HEADING,
+    ) {
         colourOutput(value = "  $value  ", colour = colour)
     }
 
@@ -55,7 +61,10 @@ internal object Console : Logging {
         promptColour: Colour = PROMPT,
     ): Boolean = prompt(prompt = "$prompt (Y/N)", promptColour = promptColour)?.equals("y", ignoreCase = true) ?: false
 
-    internal fun prompt(prompt: String, promptColour: Colour = PROMPT): String? {
+    internal fun prompt(
+        prompt: String,
+        promptColour: Colour = PROMPT,
+    ): String? {
         System.out.print("${promptColour}$prompt >> ${Colour.RESET}")
         val output = readlnOrNull()?.trim()
         if (output.isNullOrBlank()) {
@@ -69,5 +78,8 @@ internal object Console : Logging {
         colours: Pair<Colour, Colour> = HIGHLIGHT to STANDARD,
     ) = colourOutput(value = "${value.first}: ${colours.second}${value.second}", colour = colours.first)
 
-    private fun colourOutput(value: String?, colour: Colour) = println("$colour$value${Colour.RESET}")
+    private fun colourOutput(
+        value: String?,
+        colour: Colour,
+    ) = println("$colour$value${Colour.RESET}")
 }

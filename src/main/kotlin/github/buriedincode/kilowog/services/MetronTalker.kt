@@ -71,7 +71,12 @@ class MetronTalker(settings: MetronSettings) {
         return publisherId
     }
 
-    private fun searchSeries(publisherId: Long, title: String, volume: Int? = null, startYear: Int? = null): List<SeriesEntry> {
+    private fun searchSeries(
+        publisherId: Long,
+        title: String,
+        volume: Int? = null,
+        startYear: Int? = null,
+    ): List<SeriesEntry> {
         val seriesList = this.metron.listSeries(publisherId = publisherId, title = title, volume = volume, startYear = startYear)
         if (seriesList.isEmpty()) {
             logger.warn(
@@ -82,7 +87,10 @@ class MetronTalker(settings: MetronSettings) {
         return seriesList
     }
 
-    private fun pullSeries(metadata: Metadata, publisherId: Long): Long? {
+    private fun pullSeries(
+        metadata: Metadata,
+        publisherId: Long,
+    ): Long? {
         var seriesId = metadata.issue.series.resources.firstOrNull { it.source == Source.METRON }?.value
         if (seriesId == null) {
             val comicvineId = metadata.issue.series.resources.firstOrNull { it.source == Source.COMICVINE }?.value
@@ -143,7 +151,10 @@ class MetronTalker(settings: MetronSettings) {
         return seriesId
     }
 
-    private fun searchIssue(seriesId: Long, number: String? = null): List<IssueEntry> {
+    private fun searchIssue(
+        seriesId: Long,
+        number: String? = null,
+    ): List<IssueEntry> {
         val issues = this.metron.listIssues(seriesId = seriesId, number = number)
         if (issues.isEmpty()) {
             logger.warn("No issues found with query {\"seriesId\": $seriesId, \"number\": $number}")
@@ -151,7 +162,10 @@ class MetronTalker(settings: MetronSettings) {
         return issues
     }
 
-    private fun pullIssue(metadata: Metadata, seriesId: Long): Long? {
+    private fun pullIssue(
+        metadata: Metadata,
+        seriesId: Long,
+    ): Long? {
         var issueId = metadata.issue.resources.firstOrNull { it.source == Source.METRON }?.value
         if (issueId == null) {
             val comicvineId = metadata.issue.resources.firstOrNull { it.source == Source.COMICVINE }?.value

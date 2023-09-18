@@ -17,7 +17,10 @@ object OffsetDateTimeSerializer {
         return LocalDateTime.parse(dateString, format)
     }
 
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+    override fun serialize(
+        encoder: Encoder,
+        value: LocalDateTime,
+    ) {
         encoder.encodeString(value = value.format(format))
     }
 }

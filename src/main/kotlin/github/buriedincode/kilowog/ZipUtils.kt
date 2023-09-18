@@ -16,7 +16,11 @@ import kotlin.io.path.name
 import kotlin.io.path.pathString
 
 object ZipUtils {
-    fun extractFile(srcFile: Path, filename: String, extension: String): Path? {
+    fun extractFile(
+        srcFile: Path,
+        filename: String,
+        extension: String,
+    ): Path? {
         val tempFile = kotlin.io.path.createTempFile(prefix = "${srcFile.name}_${filename}_", suffix = ".$extension").toFile()
         tempFile.deleteOnExit()
 
@@ -31,7 +35,10 @@ object ZipUtils {
         return tempFile.toPath()
     }
 
-    fun unzip(srcFile: Path, destFolder: Path) {
+    fun unzip(
+        srcFile: Path,
+        destFolder: Path,
+    ) {
         ZipInputStream(srcFile.inputStream()).use { `in` ->
             var ze: ZipEntry?
             while (`in`.nextEntry.also { ze = it } != null) {
@@ -55,7 +62,10 @@ object ZipUtils {
         }
     }
 
-    fun zip(destFile: Path, content: List<Path>) {
+    fun zip(
+        destFile: Path,
+        content: List<Path>,
+    ) {
         ZipOutputStream(BufferedOutputStream(FileOutputStream(destFile.toFile()))).use { out ->
             content.map { it.pathString }.forEach { file ->
                 FileInputStream(file).use {

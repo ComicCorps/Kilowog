@@ -57,7 +57,10 @@ object Utils {
 
     fun Secret?.isNullOrBlank(): Boolean = this?.value.isNullOrBlank()
 
-    internal fun listFiles(path: Path, fileExtension: String? = null): List<Path> {
+    internal fun listFiles(
+        path: Path,
+        fileExtension: String? = null,
+    ): List<Path> {
         require(Files.isDirectory(path)) { "Path must be a directory" }
         var results = path.toFile().walkTopDown().onEnter {
             !it.name.startsWith(".")

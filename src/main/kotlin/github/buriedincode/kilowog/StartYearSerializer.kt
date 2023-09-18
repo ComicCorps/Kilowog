@@ -18,7 +18,10 @@ class StartYearSerializer : KSerializer<Int?> {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun serialize(encoder: Encoder, value: Int?) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Int?,
+    ) {
         if (value != null) {
             encoder.encodeInt(value = value)
         } else {

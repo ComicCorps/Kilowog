@@ -28,7 +28,11 @@ data class Metron(private val username: String, private val password: String, pr
         password: Secret,
         cache: SQLiteCache? = null,
     ) : this(username = username, password = password.value, cache = cache)
-    private fun encodeURI(endpoint: String, params: Map<String, String> = HashMap()): URI {
+
+    private fun encodeURI(
+        endpoint: String,
+        params: Map<String, String> = HashMap(),
+    ): URI {
         var encodedUrl: String = BASE_API + endpoint
         if (params.isNotEmpty()) {
             encodedUrl = params.keys
@@ -79,7 +83,10 @@ data class Metron(private val username: String, private val password: String, pr
         return null
     }
 
-    fun listPublishers(title: String? = null, page: Int = 1): List<PublisherEntry> {
+    fun listPublishers(
+        title: String? = null,
+        page: Int = 1,
+    ): List<PublisherEntry> {
         val params = HashMap<String, String>()
         params["page"] = page.toString()
         if (!title.isNullOrBlank()) {
@@ -174,7 +181,11 @@ data class Metron(private val username: String, private val password: String, pr
     }
 
     @JvmOverloads
-    fun listIssues(seriesId: Long, number: String? = null, page: Int = 1): List<IssueEntry> {
+    fun listIssues(
+        seriesId: Long,
+        number: String? = null,
+        page: Int = 1,
+    ): List<IssueEntry> {
         val params = HashMap<String, String>()
         params["series_id"] = seriesId.toString()
         params["page"] = page.toString()
@@ -222,7 +233,10 @@ data class Metron(private val username: String, private val password: String, pr
             .connectTimeout(Duration.ofSeconds(5))
             .build()
 
-        private fun getBasicAuthenticationHeader(username: String, password: String): String {
+        private fun getBasicAuthenticationHeader(
+            username: String,
+            password: String,
+        ): String {
             val valueToEncode = "$username:$password"
             return "Basic " + Base64.getEncoder().encodeToString(valueToEncode.toByteArray())
         }
