@@ -8,6 +8,7 @@ import github.buriedincode.kilowog.models.Metadata
 import github.buriedincode.kilowog.models.MetronInfo
 import github.buriedincode.kilowog.services.ComicvineTalker
 import github.buriedincode.kilowog.services.MetronTalker
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDate
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
@@ -189,6 +191,11 @@ object App : Logging {
                     number = Console.prompt(prompt = "Issue number") ?: return@forEach,
                 ),
             )
+            val now = LocalDate.now()
+            if (metadata.meta.date.toJavaLocalDate().isBefore(now.minusDays(7))) {
+                logger.info("No update needed")
+                return@forEach
+            }
             logger.info("Using Metron to look for information")
             var success = metron?.pullMetadata(metadata = metadata) ?: false
             if (!success) {
@@ -206,12 +213,16 @@ object App : Logging {
             val filename = metadata.issue.getFilename()
             logger.info("Processing pages")
             parsePages(folder = tempDir, metadata = metadata, filename = filename)
+            metadata.meta = Metadata.Meta()
 
             metadata.toFile(tempDir / "Metadata.xml")
             metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
             metadata.toComicInfo().toFile(tempDir / "ComicInfo.xml")
 
-            ZipUtils.zip(destFile = file.parent / "$filename.cbz", content = Utils.listFiles(path = tempDir))
+            ZipUtils.zip(
+                destFile = file.parent / "$filename.cbz",
+                content = Utils.listFiles(path = tempDir).filterNot { it.extension == "json" },
+            )
             tempDir.toFile().deleteRecursively()
             tempFile.toFile().delete()
         }
