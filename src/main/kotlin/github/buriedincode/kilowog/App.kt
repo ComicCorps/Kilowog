@@ -179,6 +179,10 @@ object App : Logging {
             comicvine = ComicvineTalker(settings = settings.comicvine)
         }
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
+            val now = LocalDate.now()
+            if (_metadata != null && _metadata.meta.date.toJavaLocalDate().isAfter(now.minusDays(7))) {
+                return@forEach
+            }
             logger.info("Processing ${file.nameWithoutExtension}")
             val metadata = _metadata ?: Metadata(
                 issue = Metadata.Issue(
@@ -191,11 +195,6 @@ object App : Logging {
                     number = Console.prompt(prompt = "Issue number") ?: return@forEach,
                 ),
             )
-            val now = LocalDate.now()
-            if (metadata.meta.date.toJavaLocalDate().isBefore(now.minusDays(7))) {
-                logger.info("No update needed")
-                return@forEach
-            }
             logger.info("Using Metron to look for information")
             var success = metron?.pullMetadata(metadata = metadata) ?: false
             if (!success) {
