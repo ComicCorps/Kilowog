@@ -51,6 +51,9 @@ data class SQLiteCache(val path: Path, val expiry: Int? = null) {
         url: String,
         response: String,
     ) {
+        if (this.select(url = url) != null) {
+            return
+        }
         val query = "INSERT INTO queries (url, response, query_date) VALUES (?, ?, ?);"
         DriverManager.getConnection(this.databaseUrl).use {
             it.prepareStatement(query).use {
