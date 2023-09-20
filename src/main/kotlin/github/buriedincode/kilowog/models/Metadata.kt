@@ -9,10 +9,7 @@ import github.buriedincode.kilowog.models.metadata.Source
 import github.buriedincode.kilowog.models.metroninfo.Genre
 import github.buriedincode.kilowog.models.metroninfo.InformationSource
 import github.buriedincode.kilowog.models.metroninfo.Role
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
@@ -212,7 +209,7 @@ data class Metadata(
     @Serializable
     data class Meta(
         @XmlElement(false)
-        val date: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
+        val date: LocalDate? = null,
         @XmlSerialName("Tool")
         val tool: Tool = Tool(),
     )

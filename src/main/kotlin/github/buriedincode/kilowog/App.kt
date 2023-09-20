@@ -8,7 +8,10 @@ import github.buriedincode.kilowog.models.Metadata
 import github.buriedincode.kilowog.models.MetronInfo
 import github.buriedincode.kilowog.services.ComicvineTalker
 import github.buriedincode.kilowog.services.MetronTalker
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
@@ -180,7 +183,7 @@ object App : Logging {
         }
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
             val now = LocalDate.now()
-            if (_metadata != null && _metadata.meta.date.toJavaLocalDate().isAfter(now.minusDays(7))) {
+            if (_metadata != null && _metadata.meta.date != null && _metadata.meta.date!!.toJavaLocalDate().isAfter(now.minusDays(7))) {
                 return@forEach
             }
             logger.info("Processing ${file.nameWithoutExtension}")
@@ -212,7 +215,7 @@ object App : Logging {
             val filename = metadata.issue.getFilename()
             logger.info("Processing pages")
             parsePages(folder = tempDir, metadata = metadata, filename = filename)
-            metadata.meta = Metadata.Meta()
+            metadata.meta = Metadata.Meta(date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
 
             metadata.toFile(tempDir / "Metadata.xml")
             metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
