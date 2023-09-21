@@ -52,6 +52,9 @@ object ZipUtils {
                 if (!destFile.startsWith(destFolder)) {
                     throw RuntimeException("Entry with an illegal path: ${ze!!.name.subSequence(1, ze!!.name.length)}")
                 }
+                if (destFile.parent != destFolder) {
+                    destFile = destFolder / destFile.name
+                }
                 if (ze!!.isDirectory) {
                     Files.createDirectories(destFile)
                 } else {

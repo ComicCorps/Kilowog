@@ -37,7 +37,7 @@ data class Issue(
     val resourceUrl: String,
     val series: Series,
     val sku: String? = null,
-    val storeDate: LocalDate,
+    val storeDate: LocalDate? = null,
     @JsonNames("arcs")
     val storyArcs: List<DatedResource> = emptyList(),
     val teams: List<DatedResource> = emptyList(),
