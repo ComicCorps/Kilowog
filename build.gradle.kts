@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.10"
     application
     id("org.jlleitschuh.gradle.ktlint") version "11.6.0"
-    id("com.github.ben-manes.versions") version "0.48.0"
+    id("com.github.ben-manes.versions") version "0.49.0"
 }
 
 group = "github.buriedincode"
@@ -39,7 +39,7 @@ dependencies {
     implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilVersion)
 
     // Log4j2
-    implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.2.0")
+    implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.3.0")
     runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.20.0")
 }
 
