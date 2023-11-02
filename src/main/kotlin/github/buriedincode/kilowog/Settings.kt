@@ -21,6 +21,7 @@ data class Settings(
     data class Marvel(val publicKey: String?, val privateKey: Secret?)
 
     data class Metron(val username: String?, val password: Secret?)
+
     companion object {
         fun load(): Settings =
             ConfigLoaderBuilder.default()

@@ -16,6 +16,7 @@ import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
+import org.apache.logging.log4j.kotlin.Logging
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
@@ -30,7 +31,7 @@ data class Metadata(
     @XmlSerialName("Pages")
     @XmlChildrenName("Page")
     var pages: List<Page> = emptyList(),
-) {
+) : Comparable<Metadata> {
     @XmlSerialName("noNamespaceSchemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi")
     @XmlElement(false)
     private val schemaUrl: String = "https://raw.githubusercontent.com/Buried-In-Code/Kilowog/main/schemas/Metadata.xsd"
@@ -74,21 +75,21 @@ data class Metadata(
         var teams: List<NamedResource> = emptyList(),
         @XmlSerialName("Title")
         var title: String? = null,
-    ) {
+    ) : Comparable<Issue> {
         @Serializable
         class Resource(
             @XmlElement(false)
             var source: Source,
             @XmlValue
             var value: Long,
-        ) {
+        ) : Comparable<Resource> {
+            override fun compareTo(other: Resource): Int = comparator.compare(this, other)
+
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (other !is Resource) return false
 
-                if (source != other.source) return false
-
-                return true
+                return source == other.source
             }
 
             override fun hashCode(): Int {
@@ -97,6 +98,10 @@ data class Metadata(
 
             override fun toString(): String {
                 return "Resource(source=$source, value=$value)"
+            }
+
+            companion object : Logging {
+                private val comparator = compareBy(Resource::source)
             }
         }
 
@@ -115,7 +120,7 @@ data class Metadata(
             var title: String,
             @XmlSerialName("Volume")
             var volume: Int = 1,
-        ) {
+        ) : Comparable<Series> {
             @Serializable
             data class Publisher(
                 @XmlSerialName("Imprint")
@@ -125,21 +130,58 @@ data class Metadata(
                 var resources: List<Resource> = emptyList(),
                 @XmlSerialName("Title")
                 var title: String,
-            ) {
+            ) : Comparable<Publisher> {
                 fun getFilename(): String = Utils.sanitize(if (imprint == null) title else "$title ($imprint)")
+
+                override fun compareTo(other: Publisher): Int = comparator.compare(this, other)
+
+                companion object : Logging {
+                    private val comparator = compareBy(Publisher::title)
+                        .thenBy(nullsLast(), Publisher::imprint)
+                }
             }
 
             fun getFilename(): String = Utils.sanitize(if (volume == 1) title else "$title v$volume")
+
+            override fun compareTo(other: Series): Int = comparator.compare(this, other)
+
+            companion object : Logging {
+                private val comparator = compareBy(Series::publisher)
+                    .thenBy(Series::title)
+                    .thenBy(Series::volume)
+                    .thenBy(Series::format)
+            }
         }
 
         @Serializable
-        data class NamedResource(
+        class NamedResource(
             @XmlSerialName("Name")
             var name: String,
             @XmlSerialName("Resources")
             @XmlChildrenName("Resource")
             var resources: List<Resource> = emptyList(),
-        )
+        ) : Comparable<NamedResource> {
+            override fun compareTo(other: NamedResource): Int = comparator.compare(this, other)
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is NamedResource) return false
+
+                return name == other.name
+            }
+
+            override fun hashCode(): Int {
+                return name.hashCode()
+            }
+
+            override fun toString(): String {
+                return "NamedResource(name=$name, resources=$resources)"
+            }
+
+            companion object : Logging {
+                private val comparator = compareBy(NamedResource::name)
+            }
+        }
 
         @Serializable
         data class Credit(
@@ -148,7 +190,13 @@ data class Metadata(
             @XmlSerialName("Roles")
             @XmlChildrenName("Role")
             var roles: List<String> = emptyList(),
-        )
+        ) : Comparable<Credit> {
+            override fun compareTo(other: Credit): Int = comparator.compare(this, other)
+
+            companion object : Logging {
+                private val comparator = compareBy(Credit::creator)
+            }
+        }
 
         @Serializable
         data class StoryArc(
@@ -159,7 +207,14 @@ data class Metadata(
             var resources: List<Resource> = emptyList(),
             @XmlSerialName("Title")
             var title: String,
-        )
+        ) : Comparable<StoryArc> {
+            override fun compareTo(other: StoryArc): Int = comparator.compare(this, other)
+
+            companion object : Logging {
+                private val comparator = compareBy(StoryArc::title)
+                    .thenBy(nullsLast(), StoryArc::number)
+            }
+        }
 
         fun getFilename(): String {
             val seriesTitle = if (series.volume == 1) series.title else "${series.title} v${series.volume}"
@@ -186,6 +241,15 @@ data class Metadata(
                 },
             )
         }
+
+        override fun compareTo(other: Issue): Int = comparator.compare(this, other)
+
+        companion object : Logging {
+            private val comparator = compareBy(Issue::series)
+                .thenBy(nullsLast()) { it.number?.toIntOrNull() }
+                .thenBy(Issue::number)
+                .thenBy(nullsLast(), Issue::title)
+        }
     }
 
     @Serializable
@@ -204,7 +268,13 @@ data class Metadata(
         var index: Int,
         @XmlElement(false)
         var type: String = "Story",
-    )
+    ) : Comparable<Page> {
+        override fun compareTo(other: Page): Int = comparator.compare(this, other)
+
+        companion object : Logging {
+            private val comparator = compareBy(Page::index)
+        }
+    }
 
     @Serializable
     data class Meta(
@@ -367,5 +437,11 @@ data class Metadata(
     fun toFile(file: Path) {
         val stringXml = Utils.XML_MAPPER.encodeToString(this)
         file.writeText(stringXml, charset = Charsets.UTF_8)
+    }
+
+    override fun compareTo(other: Metadata): Int = comparator.compare(this, other)
+
+    companion object : Logging {
+        private val comparator = compareBy(Metadata::issue)
     }
 }

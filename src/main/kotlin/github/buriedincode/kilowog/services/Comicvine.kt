@@ -9,6 +9,7 @@ import github.buriedincode.kilowog.services.comicvine.publisher.Publisher
 import github.buriedincode.kilowog.services.comicvine.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.comicvine.volume.Volume
 import github.buriedincode.kilowog.services.comicvine.volume.VolumeEntry
+import kotlinx.serialization.SerializationException
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
@@ -57,7 +58,7 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
                 .setHeader("Accept", "application/json")
                 .setHeader(
                     "User-Agent",
-                    "Dex-Starr-v${Utils.VERSION}/Java-v${System.getProperty("java.version")}",
+                    "Kilowog-v${Utils.VERSION}/Java-v${System.getProperty("java.version")}",
                 )
                 .GET()
                 .build()
@@ -95,7 +96,14 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         }
         val uri = encodeURI(endpoint = "/publishers", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
+        val response: Response<ArrayList<PublisherEntry>>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
+//        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<PublisherEntry>>>(content) else null
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
@@ -112,7 +120,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         if (content != null && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
         }
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Publisher>>(content) else null
+        val response: Response<Publisher>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<Publisher>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         return response?.results
     }
 
@@ -131,7 +145,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         }
         val uri = encodeURI(endpoint = "/volumes", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content) else null
+        val response: Response<ArrayList<VolumeEntry>>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<VolumeEntry>>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         var results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
@@ -152,7 +172,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         if (content != null && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
         }
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Volume>>(content) else null
+        val response: Response<Volume>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<Volume>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         return response?.results
     }
 
@@ -172,7 +198,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         }
         val uri = encodeURI(endpoint = "/issues", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<IssueEntry>>>(content) else null
+        val response: Response<ArrayList<IssueEntry>>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<ArrayList<IssueEntry>>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content!!)
@@ -189,7 +221,13 @@ data class Comicvine(private val apiKey: String, private val cache: SQLiteCache?
         if (content != null && this.cache != null) {
             cache.insert(url = regex.replaceFirst(uri.toString(), "api_key=***&"), response = content)
         }
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<Response<Issue>>(content) else null
+        val response: Response<Issue>? = try {
+            Utils.JSON_MAPPER.decodeFromString<Response<Issue>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         return response?.results
     }
 

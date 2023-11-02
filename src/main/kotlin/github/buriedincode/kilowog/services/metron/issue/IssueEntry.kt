@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import org.apache.logging.log4j.kotlin.Logging
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -28,11 +29,21 @@ data class IssueEntry(
         val name: String,
         val volume: Int,
         val yearBegan: Int,
-    )
+    ) : Comparable<Series> {
+        override fun compareTo(other: Series): Int = comparator.compare(this, other)
 
-    companion object {
-        private val comparator = compareBy(IssueEntry::number).thenBy { it.name }
+        companion object : Logging {
+            private val comparator = compareBy(Series::name)
+                .thenBy(Series::volume)
+                .thenBy(Series::yearBegan)
+        }
     }
 
     override fun compareTo(other: IssueEntry): Int = comparator.compare(this, other)
+
+    companion object : Logging {
+        private val comparator = compareBy(IssueEntry::series)
+            .thenBy(nullsLast()) { it.number.toIntOrNull() }
+            .thenBy(IssueEntry::number)
+    }
 }

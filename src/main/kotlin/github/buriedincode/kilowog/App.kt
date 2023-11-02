@@ -126,7 +126,7 @@ object App : Logging {
         filename: String,
     ) {
         val imageList = Utils.listFiles(path = folder).sorted()
-        imageList.filterNot { it.extension == "xml" || it.extension == "json" }.forEachIndexed { index, it ->
+        imageList.filterNot { it.extension == "xml" || it.extension == "nfo" || it.extension == "json" }.forEachIndexed { index, it ->
             val padCount = imageList.size.toString().length
             val newPage = metadata.pages.getOrNull(index = index) == null
             val page = metadata.pages.getOrNull(index = index) ?: Metadata.Page(filename = it.name, index = index)
@@ -183,7 +183,7 @@ object App : Logging {
         }
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
             val now = LocalDate.now()
-            if (_metadata != null && _metadata.meta.date != null && _metadata.meta.date!!.toJavaLocalDate().isAfter(now.minusDays(7))) {
+            if (_metadata != null && _metadata.meta.date != null && _metadata.meta.date!!.toJavaLocalDate().isAfter(now.minusMonths(1))) {
                 return@forEach
             }
             logger.info("Processing ${file.nameWithoutExtension}")
@@ -223,7 +223,7 @@ object App : Logging {
 
             ZipUtils.zip(
                 destFile = file.parent / "$filename.cbz",
-                content = Utils.listFiles(path = tempDir).filterNot { it.extension == "json" },
+                content = Utils.listFiles(path = tempDir).filterNot { it.extension == "json" || it.extension == "nfo" },
             )
             tempDir.toFile().deleteRecursively()
             tempFile.toFile().delete()

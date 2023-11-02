@@ -15,9 +15,9 @@ data class PublisherEntry(
     val id: Long,
     val name: String,
 ) : Comparable<PublisherEntry> {
+    override fun compareTo(other: PublisherEntry): Int = comparator.compare(this, other)
+
     companion object {
         private val comparator = compareBy(PublisherEntry::name)
     }
-
-    override fun compareTo(other: PublisherEntry): Int = comparator.compare(this, other)
 }

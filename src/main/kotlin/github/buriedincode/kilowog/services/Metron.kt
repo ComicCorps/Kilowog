@@ -9,6 +9,7 @@ import github.buriedincode.kilowog.services.metron.publisher.Publisher
 import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.Series
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
+import kotlinx.serialization.SerializationException
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
@@ -33,7 +34,7 @@ data class Metron(private val username: String, private val password: String, pr
         endpoint: String,
         params: Map<String, String> = HashMap(),
     ): URI {
-        var encodedUrl: String = BASE_API + endpoint
+        var encodedUrl = "$BASE_API$endpoint/"
         if (params.isNotEmpty()) {
             encodedUrl = params.keys
                 .stream()
@@ -41,7 +42,7 @@ data class Metron(private val username: String, private val password: String, pr
                 .map {
                     "$it=${URLEncoder.encode(params[it], StandardCharsets.UTF_8)}"
                 }
-                .collect(Collectors.joining("&", "$BASE_API$endpoint?", ""))
+                .collect(Collectors.joining("&", "$encodedUrl?", ""))
         }
         return URI.create(encodedUrl)
     }
@@ -94,7 +95,13 @@ data class Metron(private val username: String, private val password: String, pr
         }
         val uri = encodeURI(endpoint = "/publisher", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
+        val response: ListResponse<PublisherEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -109,7 +116,13 @@ data class Metron(private val username: String, private val password: String, pr
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/publisher", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content) else null
+        val response: ListResponse<PublisherEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -123,7 +136,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (content != null && this.cache != null) {
             cache.insert(url = uri.toString(), response = content)
         }
-        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Publisher>(content) else null
+        return try {
+            Utils.JSON_MAPPER.decodeFromString<Publisher>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
     }
 
     @JvmOverloads
@@ -148,7 +167,13 @@ data class Metron(private val username: String, private val password: String, pr
         }
         val uri = encodeURI(endpoint = "/series", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
+        val response: ListResponse<SeriesEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -163,7 +188,13 @@ data class Metron(private val username: String, private val password: String, pr
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/series", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content) else null
+        val response: ListResponse<SeriesEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -177,7 +208,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (content != null && this.cache != null) {
             cache.insert(url = uri.toString(), response = content)
         }
-        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Series>(content) else null
+        return try {
+            Utils.JSON_MAPPER.decodeFromString<Series>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
     }
 
     @JvmOverloads
@@ -194,7 +231,13 @@ data class Metron(private val username: String, private val password: String, pr
         }
         val uri = encodeURI(endpoint = "/issue", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
+        val response: ListResponse<IssueEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -209,7 +252,13 @@ data class Metron(private val username: String, private val password: String, pr
         val params = mapOf("cv_id" to comicvineId.toString())
         val uri = encodeURI(endpoint = "/issue", params = params)
         val content = sendRequest(uri = uri)
-        val response = if (content != null) Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content) else null
+        val response: ListResponse<IssueEntry>? = try {
+            Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
         val results = response?.results ?: mutableListOf()
         if (results.isNotEmpty() && this.cache != null) {
             cache.insert(url = uri.toString(), response = content!!)
@@ -223,7 +272,13 @@ data class Metron(private val username: String, private val password: String, pr
         if (content != null && this.cache != null) {
             cache.insert(url = uri.toString(), response = content)
         }
-        return if (content != null) Utils.JSON_MAPPER.decodeFromString<Issue>(content) else null
+        return try {
+            Utils.JSON_MAPPER.decodeFromString<Issue>(content ?: "Invalid")
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            logger.debug(content ?: "")
+            null
+        }
     }
 
     companion object : Logging {

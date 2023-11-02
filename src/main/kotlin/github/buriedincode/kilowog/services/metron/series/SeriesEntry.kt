@@ -18,9 +18,10 @@ data class SeriesEntry(
     var name: String,
     var yearBegan: Int,
 ) : Comparable<SeriesEntry> {
-    companion object {
-        private val comparator = compareBy(SeriesEntry::name).thenBy { it.yearBegan }
-    }
-
     override fun compareTo(other: SeriesEntry): Int = comparator.compare(this, other)
+
+    companion object {
+        private val comparator = compareBy(SeriesEntry::name)
+            .thenBy { it.yearBegan }
+    }
 }

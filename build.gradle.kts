@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
+    kotlin("plugin.serialization") version "1.9.20"
     application
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.github.ben-manes.versions") version "0.49.0"
 }
 
@@ -23,7 +23,7 @@ dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.1")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.0")
-    runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.0.0")
+    runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.2.2")
 
     // Hoplite
     val hopliteVersion = "2.7.4"
@@ -59,7 +59,7 @@ application {
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set("1.0.0")
+    version.set("1.0.1")
 }
 
 tasks {
