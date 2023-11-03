@@ -3,25 +3,37 @@ package github.buriedincode.kilowog.models
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.Utils.titleCase
+import github.buriedincode.kilowog.models.metadata.Format
+import github.buriedincode.kilowog.models.metadata.Issue
+import github.buriedincode.kilowog.models.metadata.NamedResource
+import github.buriedincode.kilowog.models.metadata.Publisher
+import github.buriedincode.kilowog.models.metadata.StoryArc
 import github.buriedincode.kilowog.models.metroninfo.AgeRating
-import github.buriedincode.kilowog.models.metroninfo.Format
-import github.buriedincode.kilowog.models.metroninfo.Genre
-import github.buriedincode.kilowog.models.metroninfo.InformationSource
-import github.buriedincode.kilowog.models.metroninfo.PageType
-import github.buriedincode.kilowog.models.metroninfo.Role
+import github.buriedincode.kilowog.models.metroninfo.Arc
+import github.buriedincode.kilowog.models.metroninfo.Credit
+import github.buriedincode.kilowog.models.metroninfo.GenreResource
+import github.buriedincode.kilowog.models.metroninfo.Gtin
+import github.buriedincode.kilowog.models.metroninfo.Page
+import github.buriedincode.kilowog.models.metroninfo.Price
+import github.buriedincode.kilowog.models.metroninfo.Resource
+import github.buriedincode.kilowog.models.metroninfo.Series
+import github.buriedincode.kilowog.models.metroninfo.Source
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
-import nl.adaptivity.xmlutil.serialization.XmlValue
 import java.nio.file.Path
 import kotlin.io.path.writeText
+import github.buriedincode.kilowog.models.metadata.Credit as MetadataCredit
+import github.buriedincode.kilowog.models.metadata.Page as MetadataPage
+import github.buriedincode.kilowog.models.metadata.Resource as MetadataResource
+import github.buriedincode.kilowog.models.metadata.Series as MetadataSeries
 import github.buriedincode.kilowog.models.metadata.Source as MetadataSource
 
 @Serializable
-data class MetronInfo(
+class MetronInfo(
     @XmlSerialName("AgeRating")
     val ageRating: AgeRating = AgeRating.UNKNOWN,
     @XmlSerialName("Arcs")
@@ -88,131 +100,28 @@ data class MetronInfo(
     @XmlElement(false)
     private val schemaUrl: String = "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"
 
-    @Serializable
-    data class Source(
-        @XmlElement(false)
-        val source: InformationSource,
-        @XmlValue
-        val value: Long,
-    )
-
-    @Serializable
-    data class Resource(
-        @XmlElement(false)
-        val id: Long? = null,
-        @XmlValue
-        val value: String,
-    )
-
-    @Serializable
-    data class Series(
-        @XmlSerialName("Format")
-        val format: Format? = null,
-        @XmlElement(false)
-        val id: Long? = null,
-        @XmlElement(false)
-        val lang: String = "en",
-        @XmlSerialName("Name")
-        val name: String,
-        @XmlSerialName("SortName")
-        val sortName: String? = null,
-        @XmlSerialName("Volume")
-        val volume: Int? = null,
-    )
-
-    @Serializable
-    data class Price(
-        @XmlElement(false)
-        val country: String,
-        @XmlValue
-        val value: Double,
-    )
-
-    @Serializable
-    data class GenreResource(
-        @XmlElement(false)
-        val id: Long? = null,
-        @XmlValue
-        val value: Genre,
-    )
-
-    @Serializable
-    data class Arc(
-        @XmlElement(false)
-        val id: Long? = null,
-        @XmlSerialName("Name")
-        val name: String,
-        @XmlSerialName("Number")
-        val number: Int? = null,
-    )
-
-    @Serializable
-    data class Gtin(
-        @XmlSerialName("ISBN")
-        val isbn: String? = null,
-        @XmlSerialName("UPC")
-        val upc: String? = null,
-    )
-
-    @Serializable
-    data class Credit(
-        @XmlSerialName("Creator")
-        val creator: Resource,
-        @XmlSerialName("Roles")
-        @XmlChildrenName("Role")
-        val roles: List<RoleResource> = emptyList(),
-    )
-
-    @Serializable
-    data class RoleResource(
-        @XmlElement(false)
-        val id: Long? = null,
-        @XmlValue
-        val value: Role,
-    )
-
-    @Serializable
-    data class Page(
-        @XmlElement(false)
-        val bookmark: String? = null,
-        @XmlElement(false)
-        val doublePage: Boolean = false,
-        @XmlElement(false)
-        val image: Int,
-        @XmlElement(false)
-        val imageHeight: Int? = null,
-        @XmlElement(false)
-        val imageSize: Long? = null,
-        @XmlElement(false)
-        val imageWidth: Int? = null,
-        @XmlElement(false)
-        val key: String? = null,
-        @XmlElement(false)
-        val type: PageType = PageType.STORY,
-    )
-
     fun toMetadata(): Metadata {
         val source: MetadataSource? = id?.source?.name?.asEnumOrNull<MetadataSource>()
         return Metadata(
-            issue = Metadata.Issue(
+            issue = Issue(
                 characters = this.characters.map { resource ->
-                    Metadata.Issue.NamedResource(
+                    NamedResource(
                         name = resource.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = resource.id ?: return@let null)
+                                MetadataResource(source = it, value = resource.id ?: return@let null)
                             },
                         ),
                     )
                 },
                 coverDate = this.coverDate,
                 credits = this.credits.map { credit ->
-                    Metadata.Issue.Credit(
-                        creator = Metadata.Issue.NamedResource(
+                    MetadataCredit(
+                        creator = NamedResource(
                             name = credit.creator.value,
                             resources = listOfNotNull(
                                 source?.let {
-                                    Metadata.Issue.Resource(source = it, value = credit.creator.id ?: return@let null)
+                                    MetadataResource(source = it, value = credit.creator.id ?: return@let null)
                                 },
                             ),
                         ),
@@ -224,11 +133,11 @@ data class MetronInfo(
                 },
                 language = this.series.lang,
                 locations = this.locations.map { location ->
-                    Metadata.Issue.NamedResource(
+                    NamedResource(
                         name = location.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = location.id ?: return@let null)
+                                MetadataResource(source = it, value = location.id ?: return@let null)
                             },
                         ),
                     )
@@ -238,24 +147,24 @@ data class MetronInfo(
                 resources = listOfNotNull(
                     source?.let {
                         this.id?.let { id ->
-                            Metadata.Issue.Resource(source = source, value = id.value)
+                            MetadataResource(source = source, value = id.value)
                         }
                     },
                 ),
-                series = Metadata.Issue.Series(
-                    format = this.series.format?.titleCase()?.asEnumOrNull<github.buriedincode.kilowog.models.metadata.Format>()
-                        ?: github.buriedincode.kilowog.models.metadata.Format.COMIC,
-                    publisher = Metadata.Issue.Series.Publisher(
+                series = MetadataSeries(
+                    format = this.series.format?.titleCase()?.asEnumOrNull<Format>()
+                        ?: Format.COMIC,
+                    publisher = Publisher(
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = publisher.id ?: return@let null)
+                                MetadataResource(source = it, value = publisher.id ?: return@let null)
                             },
                         ),
                         title = this.publisher.value,
                     ),
                     resources = listOfNotNull(
                         source?.let {
-                            Metadata.Issue.Resource(source = it, value = series.id ?: return@let null)
+                            MetadataResource(source = it, value = series.id ?: return@let null)
                         },
                     ),
                     title = this.series.name,
@@ -263,11 +172,11 @@ data class MetronInfo(
                 ),
                 storeDate = this.storeDate,
                 storyArcs = this.arcs.map { arc ->
-                    Metadata.Issue.StoryArc(
+                    StoryArc(
                         number = arc.number,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = arc.id ?: return@let null)
+                                MetadataResource(source = it, value = arc.id ?: return@let null)
                             },
                         ),
                         title = arc.name,
@@ -275,11 +184,11 @@ data class MetronInfo(
                 },
                 summary = this.summary,
                 teams = this.teams.map { team ->
-                    Metadata.Issue.NamedResource(
+                    NamedResource(
                         name = team.value,
                         resources = listOfNotNull(
                             source?.let {
-                                Metadata.Issue.Resource(source = it, value = team.id ?: return@let null)
+                                MetadataResource(source = it, value = team.id ?: return@let null)
                             },
                         ),
                     )
@@ -288,9 +197,9 @@ data class MetronInfo(
             ),
             notes = this.notes,
             pages = this.pages.map {
-                Metadata.Page(
+                MetadataPage(
                     doublePage = it.doublePage,
-                    filename = "Missing Page filename",
+                    filename = "",
                     fileSize = it.imageSize ?: 0L,
                     imageHeight = it.imageHeight ?: 0,
                     imageWidth = it.imageWidth ?: 0,
@@ -304,5 +213,58 @@ data class MetronInfo(
     fun toFile(file: Path) {
         val stringXml = Utils.XML_MAPPER.encodeToString(this)
         file.writeText(stringXml, charset = Charsets.UTF_8)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MetronInfo
+
+        if (number != other.number) return false
+        if (publisher != other.publisher) return false
+        if (series != other.series) return false
+        if (title != other.title) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = number?.hashCode() ?: 0
+        result = 31 * result + publisher.hashCode()
+        result = 31 * result + series.hashCode()
+        result = 31 * result + (title?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String {
+        return "MetronInfo(" +
+            "ageRating=$ageRating, " +
+            "arcs=$arcs, " +
+            "blackAndWhite=$blackAndWhite, " +
+            "characters=$characters, " +
+            "coverDate=$coverDate, " +
+            "credits=$credits, " +
+            "genres=$genres, " +
+            "gtin=$gtin, " +
+            "id=$id, " +
+            "locations=$locations, " +
+            "notes=$notes, " +
+            "number=$number, " +
+            "pageCount=$pageCount, " +
+            "pages=$pages, " +
+            "prices=$prices, " +
+            "publisher=$publisher, " +
+            "reprints=$reprints, " +
+            "series=$series, " +
+            "storeDate=$storeDate, " +
+            "stories=$stories, " +
+            "summary=$summary, " +
+            "tags=$tags, " +
+            "teams=$teams, " +
+            "title=$title, " +
+            "url=$url, " +
+            "schemaUrl='$schemaUrl'" +
+            ")"
     }
 }

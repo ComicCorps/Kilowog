@@ -1,3 +1,5 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+
 plugins {
     kotlin("jvm") version "1.9.20"
     kotlin("plugin.serialization") version "1.9.20"
@@ -26,7 +28,7 @@ dependencies {
     runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.2.2")
 
     // Hoplite
-    val hopliteVersion = "2.7.4"
+    val hopliteVersion = "2.7.5"
     implementation("com.sksamuel.hoplite", "hoplite-core", hopliteVersion)
     implementation("com.sksamuel.hoplite", "hoplite-hocon", hopliteVersion)
     implementation("com.sksamuel.hoplite", "hoplite-json", hopliteVersion)
@@ -40,7 +42,7 @@ dependencies {
 
     // Log4j2
     implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.3.0")
-    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.20.0")
+    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.21.1")
 }
 
 kotlin {
@@ -66,5 +68,24 @@ tasks {
     val run by existing(JavaExec::class)
     run.configure {
         standardInput = System.`in`
+    }
+}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+
+tasks.withType<DependencyUpdatesTask> {
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
+                    reject("Release candidate")
+                }
+            }
+        }
     }
 }

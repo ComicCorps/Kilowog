@@ -6,6 +6,11 @@ import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.ComicInfo
 import github.buriedincode.kilowog.models.Metadata
 import github.buriedincode.kilowog.models.MetronInfo
+import github.buriedincode.kilowog.models.metadata.Issue
+import github.buriedincode.kilowog.models.metadata.Meta
+import github.buriedincode.kilowog.models.metadata.Page
+import github.buriedincode.kilowog.models.metadata.Publisher
+import github.buriedincode.kilowog.models.metadata.Series
 import github.buriedincode.kilowog.services.ComicvineTalker
 import github.buriedincode.kilowog.services.MetronTalker
 import kotlinx.datetime.Clock
@@ -126,23 +131,23 @@ object App : Logging {
         filename: String,
     ) {
         val imageList = Utils.listFiles(path = folder).sorted()
+        val padLength = imageList.size.toString().length
         imageList.filterNot { it.extension == "xml" || it.extension == "nfo" || it.extension == "json" }.forEachIndexed { index, it ->
-            val padCount = imageList.size.toString().length
-            val newPage = metadata.pages.getOrNull(index = index) == null
-            val page = metadata.pages.getOrNull(index = index) ?: Metadata.Page(filename = it.name, index = index)
+            val isNewPage = metadata.pages.getOrNull(index = index) == null
+            val page = metadata.pages.getOrNull(index = index) ?: Page(filename = it.name, index = index)
             val image = ImageIO.read(it.toFile())
             page.doublePage = image.width >= image.height
             page.fileSize = it.fileSize()
             page.imageHeight = image.height
             page.imageWidth = image.width
             page.index = index
-            if (newPage && index == 0) {
+            if (isNewPage && index == 0) {
                 page.type = "Front Cover"
             }
-            if (newPage && index == imageList.size - 1) {
+            if (isNewPage && index == imageList.size - 1) {
                 page.type = "Back Cover"
             }
-            val newFilename = it.parent / (filename + "_${index.toString().padStart(length = padCount, padChar = '0')}." + it.extension)
+            val newFilename = it.parent / (filename + "_${index.toString().padStart(length = padLength, padChar = '0')}." + it.extension)
             if (it.name != newFilename.name) {
                 logger.info("Renamed ${it.name} to ${newFilename.name}")
                 it.moveTo(newFilename, overwrite = false)
@@ -166,7 +171,7 @@ object App : Logging {
             }
         }
         if (!directory.name.startsWith(".") && (directory.listFiles()?.size ?: 0) == 0) {
-            logger.info("Cleaning up blank folder: ${directory.name}")
+            logger.info("Removing blank folder: ${directory.name}")
             directory.deleteRecursively()
         }
     }
@@ -183,14 +188,14 @@ object App : Logging {
         }
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
             val now = LocalDate.now()
-            if (_metadata != null && _metadata.meta.date != null && _metadata.meta.date!!.toJavaLocalDate().isAfter(now.minusMonths(1))) {
+            if (_metadata != null && _metadata.meta.date != null && _metadata.meta.date!!.toJavaLocalDate().isAfter(now.minusDays(28))) {
                 return@forEach
             }
             logger.info("Processing ${file.nameWithoutExtension}")
             val metadata = _metadata ?: Metadata(
-                issue = Metadata.Issue(
-                    series = Metadata.Issue.Series(
-                        publisher = Metadata.Issue.Series.Publisher(
+                issue = Issue(
+                    series = Series(
+                        publisher = Publisher(
                             title = Console.prompt(prompt = "Publisher title") ?: return@forEach,
                         ),
                         title = Console.prompt(prompt = "Series title") ?: return@forEach,
@@ -215,7 +220,7 @@ object App : Logging {
             val filename = metadata.issue.getFilename()
             logger.info("Processing pages")
             parsePages(folder = tempDir, metadata = metadata, filename = filename)
-            metadata.meta = Metadata.Meta(date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
+            metadata.meta = Meta(date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
 
             metadata.toFile(tempDir / "Metadata.xml")
             metadata.toMetronInfo()?.toFile(tempDir / "MetronInfo.xml")
@@ -240,7 +245,7 @@ object App : Logging {
                 )
                 if (file != newLocation) {
                     logger.info(
-                        "Renamed ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
+                        "Moved ${file.relativeTo(settings.collectionFolder)} to ${newLocation.relativeTo(settings.collectionFolder)}",
                     )
                     newLocation.parent.toFile().mkdirs()
                     file.moveTo(newLocation, overwrite = false)
