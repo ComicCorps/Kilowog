@@ -5,7 +5,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.20"
     application
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.49.0"
+    id("com.github.ben-manes.versions") version "0.50.0"
 }
 
 group = "github.buriedincode"
