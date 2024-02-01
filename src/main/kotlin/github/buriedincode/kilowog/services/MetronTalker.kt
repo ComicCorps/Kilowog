@@ -4,8 +4,12 @@ import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.Utils.asEnumOrNull
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
+import github.buriedincode.kilowog.models.metadata.Credit
 import github.buriedincode.kilowog.models.metadata.Format
+import github.buriedincode.kilowog.models.metadata.NamedResource
+import github.buriedincode.kilowog.models.metadata.Resource
 import github.buriedincode.kilowog.models.metadata.Source
+import github.buriedincode.kilowog.models.metadata.StoryArc
 import github.buriedincode.kilowog.services.metron.issue.IssueEntry
 import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
@@ -61,9 +65,9 @@ class MetronTalker(settings: MetronSettings) {
         }
         val publisher = this.metron.getPublisher(publisherId = publisherId) ?: return null
         val resources = metadata.issue.series.publisher.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.METRON, value = publisherId))
+        resources.add(Resource(source = Source.METRON, value = publisherId))
         if (publisher.comicvineId != null) {
-            resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = publisher.comicvineId))
+            resources.add(Resource(source = Source.COMICVINE, value = publisher.comicvineId))
         }
         metadata.issue.series.publisher.resources = resources.toList()
         metadata.issue.series.publisher.title = publisher.name
@@ -134,9 +138,9 @@ class MetronTalker(settings: MetronSettings) {
         }
         val series = this.metron.getSeries(seriesId = seriesId) ?: return null
         val resources = metadata.issue.series.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.METRON, value = seriesId))
+        resources.add(Resource(source = Source.METRON, value = seriesId))
         if (series.comicvineId != null) {
-            resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = series.comicvineId))
+            resources.add(Resource(source = Source.COMICVINE, value = series.comicvineId))
         }
         metadata.issue.series.resources = resources.toList()
         if (series.seriesType.name.equals("Hard Cover", ignoreCase = true)) {
@@ -198,23 +202,23 @@ class MetronTalker(settings: MetronSettings) {
         }
         val issue = this.metron.getIssue(issueId = issueId) ?: return null
         val resources = metadata.issue.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.METRON, value = issueId))
+        resources.add(Resource(source = Source.METRON, value = issueId))
         if (issue.comicvineId != null) {
-            resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = issue.comicvineId))
+            resources.add(Resource(source = Source.COMICVINE, value = issue.comicvineId))
         }
         metadata.issue.resources = resources.toList()
         metadata.issue.characters = issue.characters.map {
-            Metadata.Issue.NamedResource(
+            NamedResource(
                 name = it.name,
-                resources = listOf(Metadata.Issue.Resource(source = Source.METRON, value = it.id)),
+                resources = listOf(Resource(source = Source.METRON, value = it.id)),
             )
         }
         metadata.issue.coverDate = issue.coverDate
         metadata.issue.credits = issue.credits.map {
-            Metadata.Issue.Credit(
-                creator = Metadata.Issue.NamedResource(
+            Credit(
+                creator = NamedResource(
                     name = it.creator,
-                    resources = listOf(Metadata.Issue.Resource(source = Source.METRON, value = it.id)),
+                    resources = listOf(Resource(source = Source.METRON, value = it.id)),
                 ),
                 roles = it.roles.map { it.name },
             )
@@ -224,16 +228,16 @@ class MetronTalker(settings: MetronSettings) {
         metadata.issue.pageCount = issue.pageCount ?: 0
         metadata.issue.storeDate = issue.storeDate
         metadata.issue.storyArcs = issue.storyArcs.map {
-            Metadata.Issue.StoryArc(
-                resources = listOf(Metadata.Issue.Resource(source = Source.METRON, value = it.id)),
+            StoryArc(
+                resources = listOf(Resource(source = Source.METRON, value = it.id)),
                 title = it.name,
             )
         }
         metadata.issue.summary = issue.description
         metadata.issue.teams = issue.teams.map {
-            Metadata.Issue.NamedResource(
+            NamedResource(
                 name = it.name,
-                resources = listOf(Metadata.Issue.Resource(source = Source.METRON, value = it.id)),
+                resources = listOf(Resource(source = Source.METRON, value = it.id)),
             )
         }
         metadata.issue.title = issue.title

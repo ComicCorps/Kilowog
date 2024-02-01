@@ -35,7 +35,7 @@ class Page(
     }
 
     override fun hashCode(): Int {
-        return image ?: 0
+        return image
     }
 
     override fun toString(): String {

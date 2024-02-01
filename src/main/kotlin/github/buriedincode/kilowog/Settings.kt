@@ -9,28 +9,24 @@ import kotlin.io.path.div
 
 data class Settings(
     val collectionFolder: Path,
-    val comicvine: Comicvine,
-    val leagueOfComicGeeks: LeagueOfComicGeeks,
-    val marvel: Marvel,
-    val metron: Metron,
+    val comicvine: Comicvine = Comicvine(),
+    val leagueOfComicGeeks: LeagueOfComicGeeks = LeagueOfComicGeeks(),
+    val marvel: Marvel = Marvel(),
+    val metron: Metron = Metron(),
 ) {
-    data class Comicvine(val apiKey: Secret?)
+    data class Comicvine(val apiKey: Secret? = null)
 
-    data class LeagueOfComicGeeks(val accessToken: Secret?, val clientId: String?, val clientSecret: Secret?)
+    data class LeagueOfComicGeeks(val accessToken: Secret? = null, val clientId: String? = null, val clientSecret: Secret? = null)
 
-    data class Marvel(val publicKey: String?, val privateKey: Secret?)
+    data class Marvel(val publicKey: String? = null, val privateKey: Secret? = null)
 
-    data class Metron(val username: String?, val password: Secret?)
+    data class Metron(val username: String? = null, val password: Secret? = null)
 
     companion object {
         fun load(): Settings =
             ConfigLoaderBuilder.default()
-                .addPathSource(Utils.CONFIG_ROOT / "settings.yaml", optional = true, allowEmpty = true)
-                .addPathSource(Utils.CONFIG_ROOT / "settings.toml", optional = true, allowEmpty = true)
-                .addPathSource(Utils.CONFIG_ROOT / "settings.json", optional = true, allowEmpty = true)
-                .addPathSource(Utils.CONFIG_ROOT / "settings.conf", optional = true, allowEmpty = true)
                 .addPathSource(Utils.CONFIG_ROOT / "settings.properties", optional = true, allowEmpty = true)
-                .addResourceSource("/default.yaml")
+                .addResourceSource("/default.properties")
                 .build()
                 .loadConfigOrThrow<Settings>()
     }

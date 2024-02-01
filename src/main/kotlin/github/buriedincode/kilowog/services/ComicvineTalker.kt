@@ -3,7 +3,11 @@ package github.buriedincode.kilowog.services
 import github.buriedincode.kilowog.Utils
 import github.buriedincode.kilowog.console.Console
 import github.buriedincode.kilowog.models.Metadata
+import github.buriedincode.kilowog.models.metadata.Credit
+import github.buriedincode.kilowog.models.metadata.NamedResource
+import github.buriedincode.kilowog.models.metadata.Resource
 import github.buriedincode.kilowog.models.metadata.Source
+import github.buriedincode.kilowog.models.metadata.StoryArc
 import github.buriedincode.kilowog.services.comicvine.issue.IssueEntry
 import github.buriedincode.kilowog.services.comicvine.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.comicvine.volume.VolumeEntry
@@ -51,7 +55,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         }
         val publisher = this.comicvine.getPublisher(publisherId = publisherId) ?: return null
         val resources = metadata.issue.series.publisher.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = publisherId))
+        resources.add(Resource(source = Source.COMICVINE, value = publisherId))
         metadata.issue.series.publisher.resources = resources.toList()
         metadata.issue.series.publisher.title = publisher.name
 
@@ -102,7 +106,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         }
         val volume = this.comicvine.getVolume(volumeId = volumeId) ?: return null
         val resources = metadata.issue.series.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = volumeId))
+        resources.add(Resource(source = Source.COMICVINE, value = volumeId))
         metadata.issue.series.resources = resources.toList()
         metadata.issue.series.startYear = volume.startYear
         metadata.issue.series.title = volume.name
@@ -150,43 +154,43 @@ class ComicvineTalker(settings: ComicvineSettings) {
         }
         val issue = this.comicvine.getIssue(issueId = issueId) ?: return null
         val resources = metadata.issue.resources.toMutableSet()
-        resources.add(Metadata.Issue.Resource(source = Source.COMICVINE, value = issueId))
+        resources.add(Resource(source = Source.COMICVINE, value = issueId))
         metadata.issue.resources = resources.toList()
         metadata.issue.characters = issue.characters.mapNotNull {
-            Metadata.Issue.NamedResource(
+            NamedResource(
                 name = it.name ?: return@mapNotNull null,
-                resources = listOf(Metadata.Issue.Resource(source = Source.COMICVINE, value = it.id)),
+                resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )
         }
         metadata.issue.coverDate = issue.coverDate
         metadata.issue.credits = issue.creators.mapNotNull {
-            Metadata.Issue.Credit(
-                creator = Metadata.Issue.NamedResource(
+            Credit(
+                creator = NamedResource(
                     name = it.name ?: return@mapNotNull null,
-                    resources = listOf(Metadata.Issue.Resource(source = Source.COMICVINE, value = it.id)),
+                    resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
                 ),
                 roles = it.roles.split("[~\r\n]+".toRegex()).map { it.trim() },
             )
         }
         metadata.issue.locations = issue.locations.mapNotNull {
-            Metadata.Issue.NamedResource(
+            NamedResource(
                 name = it.name ?: return@mapNotNull null,
-                resources = listOf(Metadata.Issue.Resource(source = Source.COMICVINE, value = it.id)),
+                resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )
         }
         metadata.issue.number = issue.number
         metadata.issue.storeDate = issue.storeDate
         metadata.issue.storyArcs = issue.storyArcs.mapNotNull {
-            Metadata.Issue.StoryArc(
-                resources = listOf(Metadata.Issue.Resource(source = Source.COMICVINE, value = it.id)),
+            StoryArc(
+                resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
                 title = it.name ?: return@mapNotNull null,
             )
         }
         metadata.issue.summary = issue.summary
         metadata.issue.teams = issue.teams.mapNotNull {
-            Metadata.Issue.NamedResource(
+            NamedResource(
                 name = it.name ?: return@mapNotNull null,
-                resources = listOf(Metadata.Issue.Resource(source = Source.COMICVINE, value = it.id)),
+                resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )
         }
         metadata.issue.title = issue.name

@@ -15,7 +15,7 @@ import kotlin.io.walkTopDown
 
 object Utils {
     private val HOME_ROOT = Paths.get(System.getProperty("user.home"))
-    internal const val VERSION = "0.1.1"
+    internal const val VERSION = "0.1.2"
     internal val CACHE_ROOT = HOME_ROOT / ".cache" / "kilowog"
     internal val CONFIG_ROOT = HOME_ROOT / ".config" / "kilowog"
     internal val DATA_ROOT = HOME_ROOT / ".local" / "share" / "kilowog"

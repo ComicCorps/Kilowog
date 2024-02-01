@@ -1,15 +1,15 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    kotlin("jvm") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.20"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
     application
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.49.0"
+    id("com.github.ben-manes.versions") version "0.51.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
 group = "github.buriedincode"
-version = "0.1.1"
+version = "0.1.2"
 
 println("Kilowog v$version")
 println("Kotlin v${KotlinVersion.CURRENT}")
@@ -23,26 +23,19 @@ repositories {
 
 dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
-    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.1")
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.0")
-    runtimeOnly("org.xerial", "sqlite-jdbc", "3.43.2.2")
-
-    // Hoplite
-    val hopliteVersion = "2.7.5"
-    implementation("com.sksamuel.hoplite", "hoplite-core", hopliteVersion)
-    implementation("com.sksamuel.hoplite", "hoplite-hocon", hopliteVersion)
-    implementation("com.sksamuel.hoplite", "hoplite-json", hopliteVersion)
-    implementation("com.sksamuel.hoplite", "hoplite-toml", hopliteVersion)
-    implementation("com.sksamuel.hoplite", "hoplite-yaml", hopliteVersion)
+    implementation("com.sksamuel.hoplite", "hoplite-core", "2.7.5")
+    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.5.0")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.2")
+    runtimeOnly("org.xerial", "sqlite-jdbc", "3.45.1.0")
 
     // XmlUtil
-    val xmlutilVersion = "0.86.2"
+    val xmlutilVersion = "0.86.3"
     implementation("io.github.pdvrieze.xmlutil", "core-jvm", xmlutilVersion)
     implementation("io.github.pdvrieze.xmlutil", "serialization-jvm", xmlutilVersion)
 
     // Log4j2
-    implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.3.0")
-    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.21.1")
+    implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.4.0")
+    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.22.1")
 }
 
 kotlin {
@@ -61,7 +54,7 @@ application {
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set("1.0.1")
+    version.set("1.1.1")
 }
 
 tasks {

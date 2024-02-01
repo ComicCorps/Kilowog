@@ -41,6 +41,7 @@ data class Issue(
     @JsonNames("arcs")
     val storyArcs: List<DatedResource> = emptyList(),
     val teams: List<DatedResource> = emptyList(),
+    val universes: List<DatedResource> = emptyList(),
     val title: String? = null,
     val upc: String? = null,
     val variants: List<Variant> = emptyList(),
