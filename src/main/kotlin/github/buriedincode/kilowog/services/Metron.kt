@@ -10,6 +10,7 @@ import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.Series
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
@@ -76,72 +77,85 @@ data class Metron(private val username: String, private val password: String, pr
                 return response.body()
             }
             logger.error(response.body())
-        } catch (exc: IOException) {
-            logger.error("Unable to make request to: ${uri.path}", exc)
-        } catch (exc: InterruptedException) {
-            logger.error("Unable to make request to: ${uri.path}", exc)
+        } catch (ioe: IOException) {
+            logger.error("Unable to make request to: ${uri.path}", ioe)
+        } catch (ie: InterruptedException) {
+            logger.error("Unable to make request to: ${uri.path}", ie)
         }
         return null
     }
 
-    fun listPublishers(
-        title: String? = null,
-        page: Int = 1,
-    ): List<PublisherEntry> {
-        val params = HashMap<String, String>()
-        params["page"] = page.toString()
-        if (!title.isNullOrBlank()) {
-            params["name"] = title
-        }
+    private fun listPublishers(params: Map<String, String> = emptyMap()): List<PublisherEntry> {
         val uri = encodeURI(endpoint = "/publisher", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<PublisherEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content ?: "Invalid")
+        try {
+            val content: String = sendRequest(uri = uri) ?: return emptyList()
+            val response: ListResponse<PublisherEntry> = Utils.JSON_MAPPER.decodeFromString(content)
+            val results = response.results
+            if (results.isNotEmpty() && this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            if (response.next != null) {
+                val temp = params.toMutableMap()
+                if ("page" in temp) {
+                    temp["page"] = (temp["page"]!!.toInt() + 1).toString()
+                } else {
+                    temp["page"] = 2.toString()
+                }
+                results.addAll(this.listPublishers(params = temp))
+            }
+            return results
         } catch (se: SerializationException) {
             logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
+            return emptyList()
         }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        if (response?.next != null) {
-            results.addAll(this.listPublishers(title = title, page = page + 1))
-        }
-        return results
+    }
+
+    @JvmOverloads
+    fun listPublishers(title: String? = null): List<PublisherEntry> {
+        val params: Map<String, String> = if (title.isNullOrBlank()) emptyMap() else mapOf("name" to title)
+        return listPublishers(params = params)
     }
 
     fun getPublisherByComicvine(comicvineId: Long): PublisherEntry? {
-        val params = mapOf("cv_id" to comicvineId.toString())
-        val uri = encodeURI(endpoint = "/publisher", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<PublisherEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<PublisherEntry>>(content ?: "Invalid")
-        } catch (se: SerializationException) {
-            logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
-        }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        return results.firstOrNull()
+        return listPublishers(params = mutableMapOf("cv_id" to comicvineId.toString())).firstOrNull()
     }
 
     fun getPublisher(publisherId: Long): Publisher? {
         val uri = encodeURI(endpoint = "/publisher/$publisherId")
-        val content = sendRequest(uri = uri)
-        if (content != null && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content)
-        }
-        return try {
-            Utils.JSON_MAPPER.decodeFromString<Publisher>(content ?: "Invalid")
+        try {
+            val content: String = sendRequest(uri = uri) ?: return null
+            if (this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            return Utils.JSON_MAPPER.decodeFromString(content)
         } catch (se: SerializationException) {
             logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
+            return null
+        }
+    }
+
+    private fun listSeries(params: Map<String, String> = emptyMap()): List<SeriesEntry> {
+        val uri = encodeURI(endpoint = "/series", params = params)
+        try {
+            val content: String = sendRequest(uri = uri) ?: return emptyList()
+            val response: ListResponse<SeriesEntry> = Utils.JSON_MAPPER.decodeFromString(content)
+            val results = response.results
+            if (results.isNotEmpty() && this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            if (response.next != null) {
+                val temp = params.toMutableMap()
+                if ("page" in temp) {
+                    temp["page"] = (temp["page"]!!.toInt() + 1).toString()
+                } else {
+                    temp["page"] = 2.toString()
+                }
+                results.addAll(this.listSeries(params = temp))
+            }
+            return results
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            return emptyList()
         }
     }
 
@@ -151,11 +165,10 @@ data class Metron(private val username: String, private val password: String, pr
         title: String? = null,
         volume: Int? = null,
         startYear: Int? = null,
-        page: Int = 1,
     ): List<SeriesEntry> {
-        val params = HashMap<String, String>()
-        params["publisher_id"] = publisherId.toString()
-        params["page"] = page.toString()
+        val params: MutableMap<String, String> = mutableMapOf(
+            "publisher_id" to publisherId.toString(),
+        )
         if (!title.isNullOrBlank()) {
             params["name"] = title
         }
@@ -165,55 +178,50 @@ data class Metron(private val username: String, private val password: String, pr
         if (startYear != null) {
             params["start_year"] = startYear.toString()
         }
-        val uri = encodeURI(endpoint = "/series", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<SeriesEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content ?: "Invalid")
-        } catch (se: SerializationException) {
-            logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
-        }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        if (response?.next != null) {
-            results.addAll(listSeries(publisherId, title, page + 1))
-        }
-        return results
+        return listSeries(params = params)
     }
 
     fun getSeriesByComicvine(comicvineId: Long): SeriesEntry? {
-        val params = mapOf("cv_id" to comicvineId.toString())
-        val uri = encodeURI(endpoint = "/series", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<SeriesEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<SeriesEntry>>(content ?: "Invalid")
-        } catch (se: SerializationException) {
-            logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
-        }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        return results.firstOrNull()
+        return listSeries(params = mutableMapOf("cv_id" to comicvineId.toString())).firstOrNull()
     }
 
     fun getSeries(seriesId: Long): Series? {
         val uri = encodeURI(endpoint = "/series/$seriesId")
-        val content = sendRequest(uri = uri)
-        if (content != null && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content)
-        }
-        return try {
-            Utils.JSON_MAPPER.decodeFromString<Series>(content ?: "Invalid")
+        try {
+            val content: String = sendRequest(uri = uri) ?: return null
+            val response: Series = Utils.JSON_MAPPER.decodeFromString(content)
+            if (this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            return response
         } catch (se: SerializationException) {
             logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
+            return null
+        }
+    }
+
+    private fun listIssues(params: Map<String, String> = emptyMap()): List<IssueEntry> {
+        val uri = encodeURI(endpoint = "/issue", params = params)
+        try {
+            val content: String = sendRequest(uri = uri) ?: return emptyList()
+            val response: ListResponse<IssueEntry> = Utils.JSON_MAPPER.decodeFromString(content)
+            val results = response.results
+            if (results.isNotEmpty() && this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            if (response.next != null) {
+                val temp = params.toMutableMap()
+                if ("page" in temp) {
+                    temp["page"] = (temp["page"]!!.toInt() + 1).toString()
+                } else {
+                    temp["page"] = 2.toString()
+                }
+                results.addAll(this.listIssues(params = temp))
+            }
+            return results
+        } catch (se: SerializationException) {
+            logger.error("Unable to parse response", se)
+            return emptyList()
         }
     }
 
@@ -221,63 +229,32 @@ data class Metron(private val username: String, private val password: String, pr
     fun listIssues(
         seriesId: Long,
         number: String? = null,
-        page: Int = 1,
     ): List<IssueEntry> {
-        val params = HashMap<String, String>()
-        params["series_id"] = seriesId.toString()
-        params["page"] = page.toString()
+        val params: MutableMap<String, String> = mutableMapOf(
+            "series_id" to seriesId.toString(),
+        )
         if (!number.isNullOrBlank()) {
             params["number"] = number
         }
-        val uri = encodeURI(endpoint = "/issue", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<IssueEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content ?: "Invalid")
-        } catch (se: SerializationException) {
-            logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
-        }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        if (response?.next != null) {
-            results.addAll(listIssues(seriesId, number, page + 1))
-        }
-        return results
+        return listIssues(params = params)
     }
 
     fun getIssueByComicvine(comicvineId: Long): IssueEntry? {
-        val params = mapOf("cv_id" to comicvineId.toString())
-        val uri = encodeURI(endpoint = "/issue", params = params)
-        val content = sendRequest(uri = uri)
-        val response: ListResponse<IssueEntry>? = try {
-            Utils.JSON_MAPPER.decodeFromString<ListResponse<IssueEntry>>(content ?: "Invalid")
-        } catch (se: SerializationException) {
-            logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
-        }
-        val results = response?.results ?: mutableListOf()
-        if (results.isNotEmpty() && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content!!)
-        }
-        return results.firstOrNull()
+        return listIssues(params = mutableMapOf("cv_id" to comicvineId.toString())).firstOrNull()
     }
 
     fun getIssue(issueId: Long): Issue? {
         val uri = encodeURI(endpoint = "/issue/$issueId")
-        val content = sendRequest(uri = uri)
-        if (content != null && this.cache != null) {
-            cache.insert(url = uri.toString(), response = content)
-        }
-        return try {
-            Utils.JSON_MAPPER.decodeFromString<Issue>(content ?: "Invalid")
+        try {
+            val content: String = sendRequest(uri = uri) ?: return null
+            val response: Issue = Utils.JSON_MAPPER.decodeFromString(content)
+            if (this.cache != null) {
+                cache.insert(url = uri.toString(), response = content)
+            }
+            return response
         } catch (se: SerializationException) {
             logger.error("Unable to parse response", se)
-            logger.debug(content ?: "")
-            null
+            return null
         }
     }
 
