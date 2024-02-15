@@ -10,7 +10,6 @@ import github.buriedincode.kilowog.services.metron.publisher.PublisherEntry
 import github.buriedincode.kilowog.services.metron.series.Series
 import github.buriedincode.kilowog.services.metron.series.SeriesEntry
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.kotlin.Logging
 import java.io.IOException
