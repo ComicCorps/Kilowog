@@ -28,7 +28,7 @@ object Utils {
     internal val CACHE_ROOT = CACHE_HOME / "kilowog"
     internal val CONFIG_ROOT = CONFIG_HOME / "kilowog"
     internal val DATA_ROOT = DATA_HOME / "kilowog"
-    internal const val VERSION = "0.2.0"
+    internal const val VERSION = "0.2.1"
 
     internal val imageExtensions: Array<String> = arrayOf("jpg", "jpeg", "png")
 

@@ -12,8 +12,9 @@
 [![Github - Contributors](https://img.shields.io/github/contributors/ComicCorps/Kilowog?logo=Github&label=Contributors&style=flat-square)](https://github.com/ComicCorps/Kilowog/graphs/contributors)
 
 Kilowog's goal is to help sort and organize your comic collection by using the information stored in Info files.\
-Kilowog will format all you digital comics into a singular format (cbz).
-It adds and updates the info files using the supported services.
+Kilowog will format all you digital comics into a singular format (cbz).\
+It adds and updates the info files using the supported services.\
+Unlike other tagging tools, Kilowog takes a manual approach when no Info file is provided, requiring you to enter the Publisher/Series/Issue details needed to search. 
 
 ## Execution
 

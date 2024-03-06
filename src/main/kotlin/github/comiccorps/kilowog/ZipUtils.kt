@@ -27,7 +27,7 @@ object ZipUtils : Logging {
         tempFile.deleteOnExit()
 
         val zip = ZipFile(archiveFile.toFile())
-        logger.info("Extracting $filename.$extension from ${archiveFile.name}")
+        logger.debug("Extracting $filename.$extension from ${archiveFile.name}")
         val entry = zip.getEntry("/$filename.$extension") ?: zip.getEntry("$filename.$extension") ?: return null
         zip.getInputStream(entry).use { input ->
             tempFile.outputStream().use { output ->

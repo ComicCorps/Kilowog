@@ -204,8 +204,8 @@ object App : Logging {
         }
 
         readCollection(directory = settings.collectionFolder).forEach { (file, _metadata) ->
-            logger.info("Processing ${file.nameWithoutExtension}")
             val (metadata, _folder) = if (_metadata == null) {
+                logger.info("Processing ${file.nameWithoutExtension}")
                 val tempFolder = extractToTemporary(file = file)
                 Metadata(
                     issue = Issue(
@@ -230,6 +230,8 @@ object App : Logging {
                     return@forEach
                 }
             }
+            if (_metadata != null)
+                logger.info("Processing ${file.nameWithoutExtension}")
 
             logger.info("Using Metron to look for information")
             var success = metron?.pullMetadata(metadata = metadata) ?: false
