@@ -8,8 +8,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
-group = "github.buriedincode"
-version = "0.1.2"
+group = "github.comiccorps"
+version = "0.2.0"
 
 println("Kilowog v$version")
 println("Kotlin v${KotlinVersion.CURRENT}")
@@ -25,7 +25,7 @@ dependencies {
     implementation("com.github.junrar", "junrar", "7.5.5")
     implementation("com.sksamuel.hoplite", "hoplite-core", "2.7.5")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.5.0")
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.2")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.3")
     runtimeOnly("org.xerial", "sqlite-jdbc", "3.45.1.0")
 
     // XmlUtil
@@ -35,7 +35,7 @@ dependencies {
 
     // Log4j2
     implementation("org.apache.logging.log4j", "log4j-api-kotlin", "1.4.0")
-    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.22.1")
+    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.23.0")
 }
 
 kotlin {
@@ -49,12 +49,12 @@ java {
 }
 
 application {
-    mainClass.set("github.buriedincode.kilowog.AppKt")
+    mainClass.set("github.comiccorps.kilowog.AppKt")
     applicationName = "Kilowog"
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set("1.1.1")
+    version.set("1.2.1")
 }
 
 tasks {
