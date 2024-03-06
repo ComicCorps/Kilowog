@@ -12,7 +12,7 @@ import org.apache.logging.log4j.kotlin.Logging
 class Issue(
     @XmlSerialName("Characters")
     @XmlChildrenName("Character")
-    var characters: List<NamedResource> = emptyList(),
+    var characters: List<TitledResource> = emptyList(),
     @XmlSerialName("CoverDate")
     var coverDate: LocalDate? = null,
     @XmlSerialName("Credits")
@@ -22,12 +22,12 @@ class Issue(
     var format: Format = Format.COMIC,
     @XmlSerialName("Genres")
     @XmlChildrenName("Genre")
-    var genres: List<NamedResource> = emptyList(),
+    var genres: List<TitledResource> = emptyList(),
     @XmlElement(false)
     var language: String = "en",
     @XmlSerialName("Locations")
     @XmlChildrenName("Location")
-    var locations: List<NamedResource> = emptyList(),
+    var locations: List<TitledResource> = emptyList(),
     @XmlSerialName("Number")
     var number: String? = null,
     @XmlSerialName("PageCount")
@@ -46,7 +46,7 @@ class Issue(
     var summary: String? = null,
     @XmlSerialName("Teams")
     @XmlChildrenName("Team")
-    var teams: List<NamedResource> = emptyList(),
+    var teams: List<TitledResource> = emptyList(),
     @XmlSerialName("Title")
     var title: String? = null,
 ) : Comparable<Issue> {

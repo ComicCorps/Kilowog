@@ -6,7 +6,7 @@ import github.comiccorps.kilowog.console.Console
 import github.comiccorps.kilowog.models.Metadata
 import github.comiccorps.kilowog.models.metadata.Credit
 import github.comiccorps.kilowog.models.metadata.Format
-import github.comiccorps.kilowog.models.metadata.NamedResource
+import github.comiccorps.kilowog.models.metadata.TitledResource
 import github.comiccorps.kilowog.models.metadata.Resource
 import github.comiccorps.kilowog.models.metadata.Source
 import github.comiccorps.kilowog.models.metadata.StoryArc
@@ -208,7 +208,7 @@ class MetronTalker(settings: MetronSettings) {
         }
         metadata.issue.resources = resources.toList()
         metadata.issue.characters = issue.characters.map {
-            NamedResource(
+            TitledResource(
                 title = it.name,
                 resources = listOf(Resource(source = Source.METRON, value = it.id)),
             )
@@ -216,12 +216,12 @@ class MetronTalker(settings: MetronSettings) {
         metadata.issue.coverDate = issue.coverDate
         metadata.issue.credits = issue.credits.map {
             Credit(
-                creator = NamedResource(
+                creator = TitledResource(
                     title = it.creator,
                     resources = listOf(Resource(source = Source.METRON, value = it.id)),
                 ),
                 roles = it.roles.map {
-                    NamedResource(
+                    TitledResource(
                         title = it.name,
                         resources = listOf(Resource(source = Source.METRON, value = it.id)),
                     )
@@ -229,7 +229,7 @@ class MetronTalker(settings: MetronSettings) {
             )
         }
         metadata.issue.genres = issue.series.genres.map {
-            NamedResource(title = it.name, resources = listOf(Resource(source = Source.METRON, value = it.id)))
+            TitledResource(title = it.name, resources = listOf(Resource(source = Source.METRON, value = it.id)))
         }
         metadata.issue.number = issue.number
         metadata.issue.pageCount = issue.pageCount ?: 0
@@ -242,7 +242,7 @@ class MetronTalker(settings: MetronSettings) {
         }
         metadata.issue.summary = issue.description
         metadata.issue.teams = issue.teams.map {
-            NamedResource(
+            TitledResource(
                 title = it.name,
                 resources = listOf(Resource(source = Source.METRON, value = it.id)),
             )

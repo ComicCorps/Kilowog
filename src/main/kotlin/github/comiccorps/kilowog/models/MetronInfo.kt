@@ -6,7 +6,7 @@ import github.comiccorps.kilowog.Utils.titlecase
 import github.comiccorps.kilowog.models.metadata.Format
 import github.comiccorps.kilowog.models.metadata.Issue
 import github.comiccorps.kilowog.models.metadata.Meta
-import github.comiccorps.kilowog.models.metadata.NamedResource
+import github.comiccorps.kilowog.models.metadata.TitledResource
 import github.comiccorps.kilowog.models.metadata.StoryArc
 import github.comiccorps.kilowog.models.metadata.Tool
 import github.comiccorps.kilowog.models.metroninfo.AgeRating
@@ -108,7 +108,7 @@ class MetronInfo(
         return Metadata(
             issue = Issue(
                 characters = this.characters.map { resource ->
-                    NamedResource(
+                    TitledResource(
                         resources = listOfNotNull(
                             source?.let {
                                 MetadataResource(source = it, value = resource.id ?: return@let null)
@@ -120,7 +120,7 @@ class MetronInfo(
                 coverDate = this.coverDate,
                 credits = this.credits.map { credit ->
                     MetadataCredit(
-                        creator = NamedResource(
+                        creator = TitledResource(
                             resources = listOfNotNull(
                                 source?.let {
                                     MetadataResource(source = it, value = credit.creator.id ?: return@let null)
@@ -129,7 +129,7 @@ class MetronInfo(
                             title = credit.creator.value,
                         ),
                         roles = credit.roles.map { role ->
-                            NamedResource(
+                            TitledResource(
                                 resources = listOfNotNull(
                                     source?.let {
                                         MetadataResource(source = it, value = role.id ?: return@let null)
@@ -142,7 +142,7 @@ class MetronInfo(
                 },
                 format = this.series.format?.titlecase()?.asEnumOrNull<Format>() ?: Format.COMIC,
                 genres = this.genres.map { genre ->
-                    NamedResource(
+                    TitledResource(
                         resources = listOfNotNull(
                             source?.let {
                                 MetadataResource(source = it, value = genre.id ?: return@let null)
@@ -153,7 +153,7 @@ class MetronInfo(
                 },
                 language = this.series.lang,
                 locations = this.locations.map { location ->
-                    NamedResource(
+                    TitledResource(
                         resources = listOfNotNull(
                             source?.let {
                                 MetadataResource(source = it, value = location.id ?: return@let null)
@@ -172,7 +172,7 @@ class MetronInfo(
                     },
                 ),
                 series = MetadataSeries(
-                    publisher = NamedResource(
+                    publisher = TitledResource(
                         resources = listOfNotNull(
                             source?.let {
                                 MetadataResource(source = it, value = publisher.id ?: return@let null)
@@ -202,7 +202,7 @@ class MetronInfo(
                 },
                 summary = this.summary,
                 teams = this.teams.map { team ->
-                    NamedResource(
+                    TitledResource(
                         resources = listOfNotNull(
                             source?.let {
                                 MetadataResource(source = it, value = team.id ?: return@let null)

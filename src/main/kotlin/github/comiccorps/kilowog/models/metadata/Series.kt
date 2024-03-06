@@ -9,7 +9,7 @@ import org.apache.logging.log4j.kotlin.Logging
 @Serializable
 class Series(
     @XmlSerialName("Publisher")
-    var publisher: NamedResource,
+    var publisher: TitledResource,
     @XmlSerialName("Resources")
     @XmlChildrenName("Resource")
     var resources: List<Resource> = emptyList(),

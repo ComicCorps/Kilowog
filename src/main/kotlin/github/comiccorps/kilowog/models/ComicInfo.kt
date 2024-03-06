@@ -10,7 +10,7 @@ import github.comiccorps.kilowog.models.metadata.Credit
 import github.comiccorps.kilowog.models.metadata.Format
 import github.comiccorps.kilowog.models.metadata.Issue
 import github.comiccorps.kilowog.models.metadata.Meta
-import github.comiccorps.kilowog.models.metadata.NamedResource
+import github.comiccorps.kilowog.models.metadata.TitledResource
 import github.comiccorps.kilowog.models.metadata.PageType
 import github.comiccorps.kilowog.models.metadata.Series
 import github.comiccorps.kilowog.models.metadata.StoryArc
@@ -252,23 +252,23 @@ class ComicInfo(
     fun toMetadata(): Metadata? {
         return Metadata(
             issue = Issue(
-                characters = this.characters.map { NamedResource(title = it) },
+                characters = this.characters.map { TitledResource(title = it) },
                 coverDate = this.coverDate,
                 credits = this.credits.map { (key, value) ->
                     Credit(
-                        creator = NamedResource(title = key),
-                        roles = value.map { NamedResource(title = it) },
+                        creator = TitledResource(title = key),
+                        roles = value.map { TitledResource(title = it) },
                     )
                 },
                 format = this.format?.asEnumOrNull<Format>() ?: Format.COMIC,
-                genres = this.genres.map { NamedResource(title = it) },
+                genres = this.genres.map { TitledResource(title = it) },
                 language = this.language ?: "en",
-                locations = this.locations.map { NamedResource(title = it) },
+                locations = this.locations.map { TitledResource(title = it) },
                 number = this.number,
                 pageCount = this.pageCount,
                 // Missing Resources
                 series = Series(
-                    publisher = NamedResource(title = this.publisher ?: return null),
+                    publisher = TitledResource(title = this.publisher ?: return null),
                     // Missing Resources
                     startYear = if (this.volume != null && this.volume >= 1900) this.volume else null,
                     title = this.series ?: return null,
@@ -277,7 +277,7 @@ class ComicInfo(
                 // Missing Store Date
                 storyArcs = this.storyArcs.map { StoryArc(title = it) },
                 summary = this.summary,
-                teams = this.teams.map { NamedResource(title = it) },
+                teams = this.teams.map { TitledResource(title = it) },
                 title = this.title,
             ),
             meta = Meta(date = java.time.LocalDate.now().toKotlinLocalDate(), tool = Tool(value = "ComicInfo")),

@@ -4,7 +4,7 @@ import github.comiccorps.kilowog.Utils
 import github.comiccorps.kilowog.console.Console
 import github.comiccorps.kilowog.models.Metadata
 import github.comiccorps.kilowog.models.metadata.Credit
-import github.comiccorps.kilowog.models.metadata.NamedResource
+import github.comiccorps.kilowog.models.metadata.TitledResource
 import github.comiccorps.kilowog.models.metadata.Resource
 import github.comiccorps.kilowog.models.metadata.Source
 import github.comiccorps.kilowog.models.metadata.StoryArc
@@ -157,7 +157,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         resources.add(Resource(source = Source.COMICVINE, value = issueId))
         metadata.issue.resources = resources.toList()
         metadata.issue.characters = issue.characters.mapNotNull {
-            NamedResource(
+            TitledResource(
                 title = it.name ?: return@mapNotNull null,
                 resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )
@@ -165,15 +165,15 @@ class ComicvineTalker(settings: ComicvineSettings) {
         metadata.issue.coverDate = issue.coverDate
         metadata.issue.credits = issue.creators.mapNotNull {
             Credit(
-                creator = NamedResource(
+                creator = TitledResource(
                     title = it.name ?: return@mapNotNull null,
                     resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
                 ),
-                roles = it.roles.split("[~\r\n]+".toRegex()).map { NamedResource(title = it.trim()) },
+                roles = it.roles.split("[~\r\n]+".toRegex()).map { TitledResource(title = it.trim()) },
             )
         }
         metadata.issue.locations = issue.locations.mapNotNull {
-            NamedResource(
+            TitledResource(
                 title = it.name ?: return@mapNotNull null,
                 resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )
@@ -188,7 +188,7 @@ class ComicvineTalker(settings: ComicvineSettings) {
         }
         metadata.issue.summary = issue.summary
         metadata.issue.teams = issue.teams.mapNotNull {
-            NamedResource(
+            TitledResource(
                 title = it.name ?: return@mapNotNull null,
                 resources = listOf(Resource(source = Source.COMICVINE, value = it.id)),
             )

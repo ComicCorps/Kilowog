@@ -8,7 +8,7 @@ import github.comiccorps.kilowog.models.Metadata
 import github.comiccorps.kilowog.models.MetronInfo
 import github.comiccorps.kilowog.models.metadata.Issue
 import github.comiccorps.kilowog.models.metadata.Meta
-import github.comiccorps.kilowog.models.metadata.NamedResource
+import github.comiccorps.kilowog.models.metadata.TitledResource
 import github.comiccorps.kilowog.models.metadata.Page
 import github.comiccorps.kilowog.models.metadata.PageType
 import github.comiccorps.kilowog.models.metadata.Series
@@ -210,7 +210,7 @@ object App : Logging {
                 Metadata(
                     issue = Issue(
                         series = Series(
-                            publisher = NamedResource(
+                            publisher = TitledResource(
                                 title = Console.prompt(prompt = "Publisher title") ?: return@forEach,
                             ),
                             title = Console.prompt(prompt = "Series title") ?: return@forEach,
@@ -290,9 +290,7 @@ object App : Logging {
     }
 }
 
-fun main(
-    @Suppress("UNUSED_PARAMETER") vararg args: String,
-) {
+fun main(vararg args: String) {
     println("Kilowog v${Utils.VERSION}")
     println("Kotlin v${KotlinVersion.CURRENT}")
     println("Java v${System.getProperty("java.version")}")

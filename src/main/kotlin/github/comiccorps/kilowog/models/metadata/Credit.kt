@@ -8,10 +8,10 @@ import org.apache.logging.log4j.kotlin.Logging
 @Serializable
 class Credit(
     @XmlSerialName("Creator")
-    var creator: NamedResource,
+    var creator: TitledResource,
     @XmlSerialName("Roles")
     @XmlChildrenName("Role")
-    var roles: List<NamedResource> = emptyList(),
+    var roles: List<TitledResource> = emptyList(),
 ) : Comparable<Credit> {
     override fun compareTo(other: Credit): Int = comparator.compare(this, other)
 
